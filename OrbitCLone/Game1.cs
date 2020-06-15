@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 using System;
+using System.Collections.Generic;
 
 namespace OrbitCLone
 {
@@ -13,13 +14,14 @@ namespace OrbitCLone
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        SpriteFont font;
 
         GameEntity player;
         GameEntity blackHole;
 
         Texture2D planetTexture;
 
-        NormalPlanet planet;
+        Queue<NormalPlanet> planets;
 
         double angle;
         float radius;
@@ -57,6 +59,7 @@ namespace OrbitCLone
             player = new GameEntity();
 
             rng = new Random();
+            planets = new Queue<NormalPlanet>();
 
             radius = 400.0f;
             angle = 0.0f;
@@ -84,6 +87,7 @@ namespace OrbitCLone
 
             planetTexture = Content.Load<Texture2D>("Sprites/OCL_SmallPlanet");
 
+            font = Content.Load<SpriteFont>("Fonts/myFont");
         }
 
         /// <summary>
@@ -113,14 +117,19 @@ namespace OrbitCLone
 
                 if (spawnPlanet)
                 {
-                    planet = new NormalPlanet(blackHole.position, rng, spriteBatch, planetTexture);
+                    planets.Enqueue(new NormalPlanet(blackHole.position, rng, spriteBatch, planetTexture));
                     spawnPlanet = false;
                 }
 
                 player.position = new Vector2(blackHole.position.X + (float)Math.Cos(angle) * radius, blackHole.position.Y + (float)Math.Sin(angle) * radius);
                 player.boundingSphere = new BoundingSphere(new Vector3(player.position, 0), 22);
 
-                angle = ((angle + speed * (float)gameTime.ElapsedGameTime.TotalSeconds) % 365);
+                double previousAngle = angle;
+                angle = ((angle + speed * (float)gameTime.ElapsedGameTime.TotalSeconds) % (2*Math.PI));
+                if (angle < previousAngle)
+                {
+                    score++;
+                }
 
                 if (radius > 430)
                 {
@@ -142,14 +151,24 @@ namespace OrbitCLone
 
                 radius -= 200 * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-                if (blackHole.boundingSphere.Contains(planet.boundingSphere) != ContainmentType.Contains)
-                    planet.Update(gameTime);
-                else
-                    planet.active = false;
-                
+                bool planetExpired = false;
 
-                if (player.boundingSphere.Intersects(blackHole.boundingSphere) || player.boundingSphere.Intersects(planet.boundingSphere))
+                foreach (var planet in planets)
+                {
+                    planet.Update(gameTime);
+
+                    if (player.boundingSphere.Intersects(planet.boundingSphere))
+                        gameOver = true;
+
+                    if (blackHole.boundingSphere.Contains(planet.boundingSphere) == ContainmentType.Contains)
+                        planetExpired = true;
+                }                
+
+                if (player.boundingSphere.Intersects(blackHole.boundingSphere))
                     gameOver = true;
+
+                if (planetExpired)
+                    planets.Dequeue();
             }
 
             base.Update(gameTime);
@@ -165,9 +184,13 @@ namespace OrbitCLone
 
             // TODO: Add your drawing code here
             spriteBatch.Begin();
+            Vector2 textMiddlePoint = font.MeasureString("Score: " + score.ToString());
+            Vector2 textPos = new Vector2(graphics.PreferredBackBufferWidth / 2, 50);
+            spriteBatch.DrawString(font, "Score: " + score.ToString(), textPos, Color.White, 0, textMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
             blackHole.Draw();
             player.Draw();
-            if (planet.active) planet.Draw();
+            foreach (var planet in planets)
+                planet.Draw();
             spriteBatch.End();
 
             base.Draw(gameTime);
