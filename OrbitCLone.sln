@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29728.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrbitCLone", "OrbitCLone\OrbitCLone.csproj", "{22330469-398B-49C4-AE37-64C194D4676C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{22330469-398B-49C4-AE37-64C194D4676C}.Debug|x86.ActiveCfg = Debug|x86
+		{22330469-398B-49C4-AE37-64C194D4676C}.Debug|x86.Build.0 = Debug|x86
+		{22330469-398B-49C4-AE37-64C194D4676C}.Release|x86.ActiveCfg = Release|x86
+		{22330469-398B-49C4-AE37-64C194D4676C}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {02E12BCD-8E76-493C-96B0-AE90C6C21E6F}
+	EndGlobalSection
+EndGlobal
