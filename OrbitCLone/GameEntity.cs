@@ -14,7 +14,6 @@ namespace OrbitCLone
         public Texture2D sprite { get; set; }
         public Vector2 position { get; set; }
         public BoundingSphere boundingSphere { get; set; }
-
         public SpriteBatch spriteBatch { get; set; }
 
         public void Draw()

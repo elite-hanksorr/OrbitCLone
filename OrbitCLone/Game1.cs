@@ -17,9 +17,19 @@ namespace OrbitCLone
         GameEntity player;
         GameEntity blackHole;
 
+        Texture2D planetTexture;
+
+        NormalPlanet planet;
+
         double angle;
         float radius;
         float speed;
+        int score;
+
+        bool spawnPlanet = true;
+        bool gameOver = false;
+
+        Random rng;
 
         public Game1()
         {
@@ -41,12 +51,17 @@ namespace OrbitCLone
             graphics.ApplyChanges();
 
             blackHole = new GameEntity();
+            blackHole.position = new Vector2(graphics.PreferredBackBufferWidth / 2, graphics.PreferredBackBufferHeight / 2);
+            blackHole.boundingSphere = new BoundingSphere(new Vector3(blackHole.position, 0), 80);
+
             player = new GameEntity();
 
-            blackHole.position = new Vector2(graphics.PreferredBackBufferWidth / 2, graphics.PreferredBackBufferHeight / 2);
+            rng = new Random();
+
             radius = 400.0f;
             angle = 0.0f;
             speed = 2;
+            score = 0;
 
             base.Initialize();
         }
@@ -66,6 +81,8 @@ namespace OrbitCLone
 
             blackHole.sprite = Content.Load<Texture2D>("Sprites/OCL_BlackHole");
             player.sprite = Content.Load<Texture2D>("Sprites/OCL_Player");
+
+            planetTexture = Content.Load<Texture2D>("Sprites/OCL_SmallPlanet");
 
         }
 
@@ -89,36 +106,50 @@ namespace OrbitCLone
                 Exit();
 
             // TODO: Add your update logic here
-            if (Keyboard.GetState().IsKeyDown(Keys.Space))
-                radius += 10;
-
-            player.position = new Vector2(blackHole.position.X + (float)Math.Cos(angle) * radius, blackHole.position.Y + (float)Math.Sin(angle) * radius);
-
-            angle = ((angle + speed * (float)gameTime.ElapsedGameTime.TotalSeconds) % 365);
-
-            if (radius > 400)
+            if (!gameOver)
             {
-                radius = 400;
-                speed = 2.5f;
-            }
-            else if (radius > 300)
-            {
-                speed = 2.5f;
-            }
-            else if (radius > 200)
-            {
-                speed = 3;
-            }
-            else if (radius > 100)
-            {
-                speed = 4;
-            }
+                if (Keyboard.GetState().IsKeyDown(Keys.Space))
+                    radius += 7;
 
-            radius -= 200 * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                if (spawnPlanet)
+                {
+                    planet = new NormalPlanet(blackHole.position, rng, spriteBatch, planetTexture);
+                    spawnPlanet = false;
+                }
 
-            if (radius <= 64)
-            {
-                radius = 64;
+                player.position = new Vector2(blackHole.position.X + (float)Math.Cos(angle) * radius, blackHole.position.Y + (float)Math.Sin(angle) * radius);
+                player.boundingSphere = new BoundingSphere(new Vector3(player.position, 0), 22);
+
+                angle = ((angle + speed * (float)gameTime.ElapsedGameTime.TotalSeconds) % 365);
+
+                if (radius > 430)
+                {
+                    radius = 430;
+                    speed = 2.0f;
+                }
+                else if (radius > 300)
+                {
+                    speed = 2.0f;
+                }
+                else if (radius > 200)
+                {
+                    speed = 2.5f;
+                }
+                else if (radius > 100)
+                {
+                    speed = 3;
+                }
+
+                radius -= 200 * (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                if (blackHole.boundingSphere.Contains(planet.boundingSphere) != ContainmentType.Contains)
+                    planet.Update(gameTime);
+                else
+                    planet.active = false;
+                
+
+                if (player.boundingSphere.Intersects(blackHole.boundingSphere) || player.boundingSphere.Intersects(planet.boundingSphere))
+                    gameOver = true;
             }
 
             base.Update(gameTime);
@@ -136,6 +167,7 @@ namespace OrbitCLone
             spriteBatch.Begin();
             blackHole.Draw();
             player.Draw();
+            if (planet.active) planet.Draw();
             spriteBatch.End();
 
             base.Draw(gameTime);
