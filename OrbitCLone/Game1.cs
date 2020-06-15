@@ -2,6 +2,8 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
+using System;
+
 namespace OrbitCLone
 {
     /// <summary>
@@ -11,6 +13,13 @@ namespace OrbitCLone
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+
+        GameEntity player;
+        GameEntity blackHole;
+
+        double angle;
+        float radius;
+        float speed;
 
         public Game1()
         {
@@ -27,6 +36,17 @@ namespace OrbitCLone
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            graphics.PreferredBackBufferWidth = 1920;
+            graphics.PreferredBackBufferHeight = 1080;
+            graphics.ApplyChanges();
+
+            blackHole = new GameEntity();
+            player = new GameEntity();
+
+            blackHole.position = new Vector2(graphics.PreferredBackBufferWidth / 2, graphics.PreferredBackBufferHeight / 2);
+            radius = 400.0f;
+            angle = 0.0f;
+            speed = 2;
 
             base.Initialize();
         }
@@ -41,6 +61,12 @@ namespace OrbitCLone
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
+            blackHole.spriteBatch = spriteBatch;
+            player.spriteBatch = spriteBatch;
+
+            blackHole.sprite = Content.Load<Texture2D>("Sprites/OCL_BlackHole");
+            player.sprite = Content.Load<Texture2D>("Sprites/OCL_Player");
+
         }
 
         /// <summary>
@@ -63,6 +89,37 @@ namespace OrbitCLone
                 Exit();
 
             // TODO: Add your update logic here
+            if (Keyboard.GetState().IsKeyDown(Keys.Space))
+                radius += 10;
+
+            player.position = new Vector2(blackHole.position.X + (float)Math.Cos(angle) * radius, blackHole.position.Y + (float)Math.Sin(angle) * radius);
+
+            angle = ((angle + speed * (float)gameTime.ElapsedGameTime.TotalSeconds) % 365);
+
+            if (radius > 400)
+            {
+                radius = 400;
+                speed = 2.5f;
+            }
+            else if (radius > 300)
+            {
+                speed = 2.5f;
+            }
+            else if (radius > 200)
+            {
+                speed = 3;
+            }
+            else if (radius > 100)
+            {
+                speed = 4;
+            }
+
+            radius -= 200 * (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            if (radius <= 64)
+            {
+                radius = 64;
+            }
 
             base.Update(gameTime);
         }
@@ -73,9 +130,13 @@ namespace OrbitCLone
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(new Color(34, 18, 57));
 
             // TODO: Add your drawing code here
+            spriteBatch.Begin();
+            blackHole.Draw();
+            player.Draw();
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }
