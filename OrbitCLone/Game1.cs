@@ -29,6 +29,7 @@ namespace OrbitCLone
         int score;
 
         bool spawnPlanet = true;
+        int elapsedTime = 0;
         bool gameOver = false;
 
         Random rng;
@@ -114,6 +115,15 @@ namespace OrbitCLone
             {
                 if (Keyboard.GetState().IsKeyDown(Keys.Space))
                     radius += 7;
+
+                if (gameTime.TotalGameTime.TotalSeconds > elapsedTime)
+                {
+                    elapsedTime++;
+                    int r = rng.Next(0, 100);
+                    if (r + score > 70)
+                        spawnPlanet = true;
+                }
+
 
                 if (spawnPlanet)
                 {
