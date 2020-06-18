@@ -43,9 +43,12 @@
   <ItemGroup>
     <Compile Include="Game1.cs" />
     <Compile Include="GameEntity.cs" />
-    <Compile Include="NormalPlanet.cs" />
+    <Compile Include="LargePlanet.cs" />
+    <Compile Include="MediumPlanet.cs" />
+    <Compile Include="SmallPlanet.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TinyPlanet.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">

@@ -9,14 +9,14 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace OrbitCLone
 {
-    class NormalPlanet : GameEntity
+    class LargePlanet : GameEntity
     {
-        public NormalPlanet(Vector2 c, Random r, SpriteBatch s, Texture2D t)
+        public LargePlanet(Vector2 c, Random r, SpriteBatch s, Texture2D t)
         {
             centerOfAttraction = c;
             spriteBatch = s;
             sprite = t;
-            speed = 0.15f;
+            speed = 0.05f;
 
             angle = r.Next(0, 364);
             radius = 1000;
@@ -28,7 +28,7 @@ namespace OrbitCLone
         public void Update(GameTime gt)
         {
             position += direction * speed * (float)gt.ElapsedGameTime.TotalSeconds;
-            boundingSphere = new BoundingSphere(new Vector3(position, 0), 20);
+            boundingSphere = new BoundingSphere(new Vector3(position, 0), 28);
         }
 
         public bool active { get; set; }

@@ -19,16 +19,26 @@ namespace OrbitCLone
         GameEntity player;
         GameEntity blackHole;
 
-        Texture2D planetTexture;
+        Texture2D tinyPlanetTexture;
+        Texture2D smallPlanetTexture;
+        Texture2D mediumPlanetTexture;
+        Texture2D largePlanetTexture;
 
-        Queue<NormalPlanet> planets;
+        Queue<TinyPlanet> tinyPlanets;
+        Queue<SmallPlanet> smallPlanets;
+        Queue<MediumPlanet> mediumPlanets;
+        Queue<LargePlanet> largePlanets;
 
         double angle;
         float radius;
         float speed;
         int score;
 
-        bool spawnPlanet = true;
+        bool spawnTinyPlanet = false;
+        bool spawnSmallPlanet = true;
+        bool spawnMediumPlanet = false;
+        bool spawnLargePlanet = false;
+
         int elapsedTime = 0;
         bool gameOver = false;
 
@@ -60,7 +70,11 @@ namespace OrbitCLone
             player = new GameEntity();
 
             rng = new Random();
-            planets = new Queue<NormalPlanet>();
+
+            tinyPlanets = new Queue<TinyPlanet>();
+            smallPlanets = new Queue<SmallPlanet>();
+            mediumPlanets = new Queue<MediumPlanet>();
+            largePlanets = new Queue<LargePlanet>();
 
             radius = 400.0f;
             angle = 0.0f;
@@ -86,7 +100,10 @@ namespace OrbitCLone
             blackHole.sprite = Content.Load<Texture2D>("Sprites/OCL_BlackHole");
             player.sprite = Content.Load<Texture2D>("Sprites/OCL_Player");
 
-            planetTexture = Content.Load<Texture2D>("Sprites/OCL_SmallPlanet");
+            tinyPlanetTexture = Content.Load<Texture2D>("Sprites/OCL_TinyPlanet");
+            smallPlanetTexture = Content.Load<Texture2D>("Sprites/OCL_SmallPlanet");
+            mediumPlanetTexture = Content.Load<Texture2D>("Sprites/OCL_MediumPlanet");
+            largePlanetTexture = Content.Load<Texture2D>("Sprites/OCL_LargePlanet");
 
             font = Content.Load<SpriteFont>("Fonts/myFont");
         }
@@ -121,14 +138,50 @@ namespace OrbitCLone
                     elapsedTime++;
                     int r = rng.Next(0, 100);
                     if (r + score > 70)
-                        spawnPlanet = true;
+                        spawnSmallPlanet = true;
+
+                    if ((elapsedTime % 2) == 0)
+                    {
+                        r = rng.Next(0, 100);
+                        if (r + score > 80)
+                            spawnMediumPlanet = true;
+                    }
+
+                    if ((elapsedTime % 3) == 0)
+                    {
+                        r = rng.Next(0, 100);
+                        if (r + score > 90)
+                            spawnLargePlanet = true;
+                    }
+
+                    if ((elapsedTime % 5) == 0)
+                    {
+                        r = rng.Next(0, 100);
+                        if (r + score > 95)
+                            spawnTinyPlanet = true;
+                    }
                 }
 
 
-                if (spawnPlanet)
+                if (spawnTinyPlanet)
                 {
-                    planets.Enqueue(new NormalPlanet(blackHole.position, rng, spriteBatch, planetTexture));
-                    spawnPlanet = false;
+                    tinyPlanets.Enqueue(new TinyPlanet(blackHole.position, rng, spriteBatch, tinyPlanetTexture));
+                    spawnTinyPlanet = false;
+                }
+                if (spawnSmallPlanet)
+                {
+                    smallPlanets.Enqueue(new SmallPlanet(blackHole.position, rng, spriteBatch, smallPlanetTexture));
+                    spawnSmallPlanet = false;
+                }
+                if (spawnMediumPlanet)
+                {
+                    mediumPlanets.Enqueue(new MediumPlanet(blackHole.position, rng, spriteBatch, mediumPlanetTexture));
+                    spawnMediumPlanet = false;
+                }
+                if (spawnLargePlanet)
+                {
+                    largePlanets.Enqueue(new LargePlanet(blackHole.position, rng, spriteBatch, largePlanetTexture));
+                    spawnLargePlanet = false;
                 }
 
                 player.position = new Vector2(blackHole.position.X + (float)Math.Cos(angle) * radius, blackHole.position.Y + (float)Math.Sin(angle) * radius);
@@ -163,7 +216,7 @@ namespace OrbitCLone
 
                 bool planetExpired = false;
 
-                foreach (var planet in planets)
+                foreach (var planet in tinyPlanets)
                 {
                     planet.Update(gameTime);
 
@@ -172,13 +225,61 @@ namespace OrbitCLone
 
                     if (blackHole.boundingSphere.Contains(planet.boundingSphere) == ContainmentType.Contains)
                         planetExpired = true;
-                }                
+                }
+
+                if (planetExpired)
+                    tinyPlanets.Dequeue();
+
+                planetExpired = false;
+
+                foreach (var planet in smallPlanets)
+                {
+                    planet.Update(gameTime);
+
+                    if (player.boundingSphere.Intersects(planet.boundingSphere))
+                        gameOver = true;
+
+                    if (blackHole.boundingSphere.Contains(planet.boundingSphere) == ContainmentType.Contains)
+                        planetExpired = true;
+                }
+
+                if (planetExpired)
+                    smallPlanets.Dequeue();
+
+                planetExpired = false;
+
+                foreach (var planet in mediumPlanets)
+                {
+                    planet.Update(gameTime);
+
+                    if (player.boundingSphere.Intersects(planet.boundingSphere))
+                        gameOver = true;
+
+                    if (blackHole.boundingSphere.Contains(planet.boundingSphere) == ContainmentType.Contains)
+                        planetExpired = true;
+                }
+
+                if (planetExpired)
+                    mediumPlanets.Dequeue();
+
+                planetExpired = false;
+
+                foreach (var planet in largePlanets)
+                {
+                    planet.Update(gameTime);
+
+                    if (player.boundingSphere.Intersects(planet.boundingSphere))
+                        gameOver = true;
+
+                    if (blackHole.boundingSphere.Contains(planet.boundingSphere) == ContainmentType.Contains)
+                        planetExpired = true;
+                }
+
+                if (planetExpired)
+                    largePlanets.Dequeue();
 
                 if (player.boundingSphere.Intersects(blackHole.boundingSphere))
                     gameOver = true;
-
-                if (planetExpired)
-                    planets.Dequeue();
             }
 
             base.Update(gameTime);
@@ -199,7 +300,13 @@ namespace OrbitCLone
             spriteBatch.DrawString(font, "Score: " + score.ToString(), textPos, Color.White, 0, textMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
             blackHole.Draw();
             player.Draw();
-            foreach (var planet in planets)
+            foreach (var planet in tinyPlanets)
+                planet.Draw();
+            foreach (var planet in smallPlanets)
+                planet.Draw();
+            foreach (var planet in mediumPlanets)
+                planet.Draw();
+            foreach (var planet in largePlanets)
                 planet.Draw();
             spriteBatch.End();
 
