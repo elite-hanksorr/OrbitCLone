@@ -5,6 +5,8 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 
+using OrbitLearner;
+
 namespace OrbitCLone
 {
     /// <summary>
@@ -44,6 +46,8 @@ namespace OrbitCLone
 
         Random rng;
 
+        Brain brain;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -80,6 +84,8 @@ namespace OrbitCLone
             angle = 0.0f;
             speed = 2;
             score = 0;
+
+            brain = new Brain(new List<int> { 5, 3, 1 });
 
             base.Initialize();
         }
@@ -132,6 +138,18 @@ namespace OrbitCLone
             {
                 if (Keyboard.GetState().IsKeyDown(Keys.Space))
                     radius += 7;
+
+                List<float> inputs = new List<float> {
+                    (float)rng.Next(-5, 5),
+                    (float)rng.Next(-5, 5),
+                    (float)rng.Next(-5, 5),
+                    (float)rng.Next(-5, 5),
+                    (float)rng.Next(-5, 5)};
+
+                var output = brain.FeedFoward(inputs);
+                if (output[0] > 0)
+                    radius += 7;
+
 
                 if (gameTime.TotalGameTime.TotalSeconds > elapsedTime)
                 {
