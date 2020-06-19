@@ -4,15 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{36C6E1E1-AB29-4FD9-8224-BEFE3B8AC684}</ProjectGuid>
+    <ProjectGuid>{89C65D01-04AD-4B9E-BCFF-22615CFEB5A1}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>OrbitLearner</RootNamespace>
     <AssemblyName>OrbitLearner</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
