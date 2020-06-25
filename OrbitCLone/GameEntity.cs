@@ -14,11 +14,12 @@ namespace OrbitCLone
         public Texture2D sprite { get; set; }
         public Vector2 position { get; set; }
         public BoundingSphere boundingSphere { get; set; }
-        public SpriteBatch spriteBatch { get; set; }
 
-        public void Draw()
+        public virtual void Update(GameTime gt) { }
+
+        public void Draw(SpriteBatch sb)
         {
-            spriteBatch.Draw(sprite, position, null, Color.White, 0f, new Vector2(sprite.Width / 2, sprite.Height / 2), Vector2.One, SpriteEffects.None, 0f);
+            sb.Draw(sprite, position, null, Color.White, 0f, new Vector2(sprite.Width / 2, sprite.Height / 2), Vector2.One, SpriteEffects.None, 0f);
         }
     }
 }

@@ -56,6 +56,18 @@
 /processorParam:TextureFormat=Color
 /build:Sprites/OCL_MediumPlanet.png
 
+#begin Sprites/OCL_Outline.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Sprites/OCL_Outline.png
+
 #begin Sprites/OCL_Player.png
 /importer:TextureImporter
 /processor:TextureProcessor
