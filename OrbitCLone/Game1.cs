@@ -15,7 +15,7 @@ namespace OrbitCLone
         SpriteBatch spriteBatch;
         SpriteFont font;
 
-        GameEntity player;
+        Player player;
         GameEntity blackHole;
 
         PlanetData tinyPlanetData, smallPlanetData, mediumPlanetData, largePlanetData;
@@ -23,11 +23,6 @@ namespace OrbitCLone
         GameEntity outline;
 
         List<EnemyPlanet> enemyPlanets;
-
-        double angle;
-        float radius;
-        float speed;
-        int score;
 
         int elapsedTime = 0;
         bool gameOver = false;
@@ -52,7 +47,7 @@ namespace OrbitCLone
             blackHole.position = new Vector2(graphics.PreferredBackBufferWidth / 2, graphics.PreferredBackBufferHeight / 2);
             blackHole.boundingSphere = new BoundingSphere(new Vector3(blackHole.position, 0), 80);
 
-            player = new GameEntity();
+            player = new Player();
             outline = new GameEntity();
 
             rng = new Random();
@@ -63,11 +58,6 @@ namespace OrbitCLone
             smallPlanetData = new PlanetData(0.15f, 20);
             mediumPlanetData = new PlanetData(0.10f, 23);
             largePlanetData = new PlanetData(0.07f, 28);
-
-            radius = 400.0f;
-            angle = 0.0f;
-            speed = 2;
-            score = 0;
 
             brain = new Brain(new List<int> { 3, 2, 1 });
 
@@ -103,9 +93,6 @@ namespace OrbitCLone
 
             if (!gameOver)
             {
-                if (Keyboard.GetState().IsKeyDown(Keys.Space))
-                    radius += 7;
-
                 //test code to find nearest planet in front of player
                 /*if (smallPlanets.Count != 0)
                 {
@@ -141,60 +128,32 @@ namespace OrbitCLone
                 {
                     elapsedTime++;
                     int r = rng.Next(0, 100);
-                    if (r + score > 70)
+                    if (r + player.Score > 70)
                         enemyPlanets.Add(new EnemyPlanet(smallPlanetData));
 
                     if ((elapsedTime % 2) == 0)
                     {
                         r = rng.Next(0, 100);
-                        if (r + score > 80)
+                        if (r + player.Score > 80)
                             enemyPlanets.Add(new EnemyPlanet(mediumPlanetData));
                     }
 
                     if ((elapsedTime % 3) == 0)
                     {
                         r = rng.Next(0, 100);
-                        if (r + score > 90)
+                        if (r + player.Score > 90)
                             enemyPlanets.Add(new EnemyPlanet(largePlanetData));
                     }
 
                     if ((elapsedTime % 5) == 0)
                     {
                         r = rng.Next(0, 100);
-                        if (r + score > 95)
+                        if (r + player.Score > 95)
                             enemyPlanets.Add(new EnemyPlanet(tinyPlanetData));
                     }
                 }
 
-                player.position = new Vector2(blackHole.position.X + (float)Math.Cos(angle) * radius, blackHole.position.Y + (float)Math.Sin(angle) * radius);
-                player.boundingSphere = new BoundingSphere(new Vector3(player.position, 0), 22);
-
-                double previousAngle = angle;
-                angle = ((angle + speed * (float)gameTime.ElapsedGameTime.TotalSeconds) % (2*Math.PI));
-                if (angle < previousAngle)
-                {
-                    score++;
-                }
-
-                if (radius > 430)
-                {
-                    radius = 430;
-                    speed = 2.0f;
-                }
-                else if (radius > 300)
-                {
-                    speed = 2.0f;
-                }
-                else if (radius > 200)
-                {
-                    speed = 2.5f;
-                }
-                else if (radius > 100)
-                {
-                    speed = 3;
-                }
-
-                radius -= 200 * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                player.Update(gameTime);
 
                 for (int i = 0; i < enemyPlanets.Count; i++)
                 {
@@ -221,9 +180,9 @@ namespace OrbitCLone
             GraphicsDevice.Clear(new Color(34, 18, 57));
 
             spriteBatch.Begin();
-            Vector2 textMiddlePoint = font.MeasureString("Score: " + score.ToString());
+            Vector2 textMiddlePoint = font.MeasureString("Score: " + player.Score.ToString());
             Vector2 textPos = new Vector2(graphics.PreferredBackBufferWidth / 2, 50);
-            spriteBatch.DrawString(font, "Score: " + score.ToString(), textPos, Color.White, 0, textMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
+            spriteBatch.DrawString(font, "Score: " + player.Score.ToString(), textPos, Color.White, 0, textMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
             blackHole.Draw(spriteBatch);
             player.Draw(spriteBatch);
             foreach (var planet in enemyPlanets)
