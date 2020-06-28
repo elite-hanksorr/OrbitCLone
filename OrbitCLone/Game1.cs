@@ -11,16 +11,29 @@ namespace OrbitCLone
 {
     public class Game1 : Game
     {
+        enum GameState
+        {
+            Menu,
+            PlayMode,
+            TrainMode,
+            NewGame
+        }
+
+        GameState state = GameState.TrainMode;
+
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         SpriteFont font;
 
         Player player;
+
+        List<Agent> agents;
+        Texture2D agentSprite;
         GameEntity blackHole;
 
         PlanetData tinyPlanetData, smallPlanetData, mediumPlanetData, largePlanetData;
 
-        GameEntity outline;
+        //GameEntity outline;
 
         List<EnemyPlanet> enemyPlanets;
 
@@ -43,12 +56,22 @@ namespace OrbitCLone
             graphics.PreferredBackBufferHeight = 1080;
             graphics.ApplyChanges();
 
-            blackHole = new GameEntity();
-            blackHole.position = new Vector2(graphics.PreferredBackBufferWidth / 2, graphics.PreferredBackBufferHeight / 2);
+            blackHole = new GameEntity
+            {
+                position = new Vector2(graphics.PreferredBackBufferWidth / 2, graphics.PreferredBackBufferHeight / 2)
+            };
             blackHole.boundingSphere = new BoundingSphere(new Vector3(blackHole.position, 0), 80);
 
-            player = new Player();
-            outline = new GameEntity();
+            if (state == GameState.PlayMode) player = new Player();
+            //outline = new GameEntity();
+            if (state == GameState.TrainMode)
+            {
+                agents = new List<Agent>(100);
+                for (int i = 0; i < 100; i++)
+                {
+                    agents.Add(new Agent());
+                }
+            }
 
             rng = new Random();
 
@@ -70,8 +93,19 @@ namespace OrbitCLone
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             blackHole.sprite = Content.Load<Texture2D>("Sprites/OCL_BlackHole");
-            player.sprite = Content.Load<Texture2D>("Sprites/OCL_Player");
-            outline.sprite = Content.Load<Texture2D>("Sprites/OCL_Outline");
+
+            if (state == GameState.PlayMode)
+                player.sprite = Content.Load<Texture2D>("Sprites/OCL_Player");
+
+            if (state == GameState.TrainMode)
+            {
+                agentSprite = Content.Load<Texture2D>("Sprites/OCL_Player");
+                foreach (var agent in agents)
+                {
+                    agent.sprite = agentSprite;
+                }
+            }
+            //outline.sprite = Content.Load<Texture2D>("Sprites/OCL_Outline");
 
             tinyPlanetData.Texture = Content.Load<Texture2D>("Sprites/OCL_TinyPlanet");
             smallPlanetData.Texture = Content.Load<Texture2D>("Sprites/OCL_SmallPlanet");
@@ -86,91 +120,137 @@ namespace OrbitCLone
             // TODO: Unload any non ContentManager content here
         }
 
+        private int FindHighestScore()
+        {
+            int maxScore = 0;
+            foreach (var agent in agents)
+            {
+                if (agent.Score > maxScore)
+                {
+                    maxScore = agent.Score;
+                }
+            }
+
+            return maxScore;
+        }
+
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            if (!gameOver)
+            switch (state)
             {
-                //test code to find nearest planet in front of player
-                /*if (smallPlanets.Count != 0)
-                {
-                    //double min_angle = 2 * Math.PI;
-                    float min_value = 30000.0f;
-                    Vector2 nearestPlanetPosition = new Vector2();
-                    foreach (var planet in smallPlanets)
+                case GameState.PlayMode:
+                    if (!gameOver)
                     {
+                        //Spawn enemy planets.
+                        if (gameTime.TotalGameTime.TotalSeconds > elapsedTime)
+                        {
+                            elapsedTime++;
+                            int r = rng.Next(0, 100);
+                            if (r + player.Score > 70)
+                                enemyPlanets.Add(new EnemyPlanet(smallPlanetData));
 
-                        //if (planet.angle > angle && planet.angle < angle + Math.PI * 2/3)
-                        //{
-                            //calc distance
-                            float distance = (float)Math.Sqrt(
-                                (planet.position.X - player.position.X) *
-                                (planet.position.X - player.position.X) +
-                                (planet.position.Y - player.position.Y) *
-                                (planet.position.Y - player.position.Y));
-                            if (distance < min_value)
+                            if ((elapsedTime % 2) == 0)
                             {
-                                min_value = distance;
-                                nearestPlanetPosition = planet.position;
+                                r = rng.Next(0, 100);
+                                if (r + player.Score > 80)
+                                    enemyPlanets.Add(new EnemyPlanet(mediumPlanetData));
                             }
-                        //}
+
+                            if ((elapsedTime % 3) == 0)
+                            {
+                                r = rng.Next(0, 100);
+                                if (r + player.Score > 90)
+                                    enemyPlanets.Add(new EnemyPlanet(largePlanetData));
+                            }
+
+                            if ((elapsedTime % 5) == 0)
+                            {
+                                r = rng.Next(0, 100);
+                                if (r + player.Score > 95)
+                                    enemyPlanets.Add(new EnemyPlanet(tinyPlanetData));
+                            }
+                        }
+
+                        player.Update(gameTime);
+
+                        for (int i = 0; i < enemyPlanets.Count; i++)
+                        {
+                            var planet = enemyPlanets[i];
+                            planet.Update(gameTime);
+                            if (player.boundingSphere.Intersects(planet.boundingSphere))
+                                gameOver = true;
+                            if (blackHole.boundingSphere.Contains(planet.boundingSphere) == ContainmentType.Contains)
+                            {
+                                enemyPlanets.Remove(planet);
+                                i--;
+                            }
+                        }
+
+                        if (player.boundingSphere.Intersects(blackHole.boundingSphere))
+                            gameOver = true;
                     }
-
-                    outline.position = nearestPlanetPosition;
-                }
-                else
-                    outline.position = new Vector2();*/
-
-                //Spawn enemy planets.
-                if (gameTime.TotalGameTime.TotalSeconds > elapsedTime)
-                {
-                    elapsedTime++;
-                    int r = rng.Next(0, 100);
-                    if (r + player.Score > 70)
-                        enemyPlanets.Add(new EnemyPlanet(smallPlanetData));
-
-                    if ((elapsedTime % 2) == 0)
+                    break;
+                case GameState.TrainMode:
+                    if (!gameOver)
                     {
-                        r = rng.Next(0, 100);
-                        if (r + player.Score > 80)
-                            enemyPlanets.Add(new EnemyPlanet(mediumPlanetData));
-                    }
+                        //Spawn enemy planets.
+                        if (gameTime.TotalGameTime.TotalSeconds > elapsedTime)
+                        {
+                            elapsedTime++;
+                            int highScore = FindHighestScore();
+                            int r = rng.Next(0, 100);
+                            if (r + highScore > 70)
+                                enemyPlanets.Add(new EnemyPlanet(smallPlanetData));
 
-                    if ((elapsedTime % 3) == 0)
-                    {
-                        r = rng.Next(0, 100);
-                        if (r + player.Score > 90)
-                            enemyPlanets.Add(new EnemyPlanet(largePlanetData));
-                    }
+                            if ((elapsedTime % 2) == 0)
+                            {
+                                r = rng.Next(0, 100);
+                                if (r + highScore > 80)
+                                    enemyPlanets.Add(new EnemyPlanet(mediumPlanetData));
+                            }
 
-                    if ((elapsedTime % 5) == 0)
-                    {
-                        r = rng.Next(0, 100);
-                        if (r + player.Score > 95)
-                            enemyPlanets.Add(new EnemyPlanet(tinyPlanetData));
-                    }
-                }
+                            if ((elapsedTime % 3) == 0)
+                            {
+                                r = rng.Next(0, 100);
+                                if (r + highScore > 90)
+                                    enemyPlanets.Add(new EnemyPlanet(largePlanetData));
+                            }
 
-                player.Update(gameTime);
+                            if ((elapsedTime % 5) == 0)
+                            {
+                                r = rng.Next(0, 100);
+                                if (r + highScore > 95)
+                                    enemyPlanets.Add(new EnemyPlanet(tinyPlanetData));
+                            }
+                        }
 
-                for (int i = 0; i < enemyPlanets.Count; i++)
-                {
-                    var planet = enemyPlanets[i];
-                    planet.Update(gameTime);
-                    if (player.boundingSphere.Intersects(planet.boundingSphere))
+                        for (int i = 0; i < enemyPlanets.Count; i++)
+                        {
+                            var planet = enemyPlanets[i];
+                            planet.Update(gameTime);
+                            if (blackHole.boundingSphere.Contains(planet.boundingSphere) == ContainmentType.Contains)
+                            {
+                                enemyPlanets.Remove(planet);
+                                i--;
+                            }
+                        }
+
                         gameOver = true;
-                    if (blackHole.boundingSphere.Contains(planet.boundingSphere) == ContainmentType.Contains)
-                    {
-                        enemyPlanets.Remove(planet);
-                        i--;
-                    }
-                }
+                        foreach (var agent in agents)
+                        {
+                            agent.Update(enemyPlanets, blackHole.boundingSphere, gameTime);
+                            gameOver = gameOver && !agent.Alive;
+                        }
 
-                if (player.boundingSphere.Intersects(blackHole.boundingSphere))
-                    gameOver = true;
+                    }
+                    break;
+                default:
+                    break;
             }
+
 
             base.Update(gameTime);
         }
@@ -180,14 +260,34 @@ namespace OrbitCLone
             GraphicsDevice.Clear(new Color(34, 18, 57));
 
             spriteBatch.Begin();
-            Vector2 textMiddlePoint = font.MeasureString("Score: " + player.Score.ToString());
-            Vector2 textPos = new Vector2(graphics.PreferredBackBufferWidth / 2, 50);
-            spriteBatch.DrawString(font, "Score: " + player.Score.ToString(), textPos, Color.White, 0, textMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
             blackHole.Draw(spriteBatch);
-            player.Draw(spriteBatch);
             foreach (var planet in enemyPlanets)
                 planet.Draw(spriteBatch);
-            outline.Draw(spriteBatch);
+
+            switch (state)
+            {
+                case GameState.PlayMode:
+                {
+                    Vector2 textMiddlePoint = font.MeasureString("Score: " + player.Score.ToString());
+                    Vector2 textPos = new Vector2(graphics.PreferredBackBufferWidth / 2, 50);
+                    spriteBatch.DrawString(font, "Score: " + player.Score.ToString(), textPos, Color.White, 0, textMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
+                    player.Draw(spriteBatch);
+                    break;
+                }
+                case GameState.TrainMode:
+                {
+                    int highScore = FindHighestScore();
+                    Vector2 textMiddlePoint = font.MeasureString("Score: " + highScore.ToString());
+                    Vector2 textPos = new Vector2(graphics.PreferredBackBufferWidth / 2, 50);
+                    spriteBatch.DrawString(font, "Score: " + highScore.ToString(), textPos, Color.White, 0, textMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
+                    foreach (var agent in agents)
+                        agent.Draw(spriteBatch);
+                    break;
+                }
+                default:
+                    break;
+            }
+            //outline.Draw(spriteBatch);
             spriteBatch.End();
 
             base.Draw(gameTime);

@@ -17,6 +17,7 @@ namespace OrbitCLone
             Angle = 0.0f;
             Speed = 2;
             Score = 0;
+            Size = 22;
         }
 
         public override void Update(GameTime gt)
@@ -25,7 +26,7 @@ namespace OrbitCLone
                 Radius += 7;
 
             position = new Vector2(centerOfAttraction.X + (float)Math.Cos(Angle) * Radius, centerOfAttraction.Y + (float)Math.Sin(Angle) * Radius);
-            boundingSphere = new BoundingSphere(new Vector3(position, 0), 22);
+            boundingSphere = new BoundingSphere(new Vector3(position, 0), Size);
 
             double previousAngle = Angle;
             Angle = ((Angle + Speed * (float)gt.ElapsedGameTime.TotalSeconds) % (2 * Math.PI));

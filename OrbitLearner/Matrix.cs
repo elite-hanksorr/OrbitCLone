@@ -13,8 +13,6 @@ namespace OrbitLearner
             w = width;
             h = height;
 
-            rng = new Random();
-
             elements = new List<List<float>>();
 
             for (int i = 0; i < height; i++)
@@ -25,13 +23,13 @@ namespace OrbitLearner
 
         public void Randomize()
         {
+            var rng = new Random();
+
             foreach (var row in elements)
             {
-                float alternate = 1.0f;
                 for (int i = 0; i < w; i++)
                 {
-                    row.Add(alternate * (float)rng.NextDouble());
-                    alternate *= -1.0f;
+                    row.Add((float)rng.NextDouble() * 10.0f - 5.0f);
                 }
             }
         }
@@ -60,6 +58,5 @@ namespace OrbitLearner
         //inner list is rows, outer list is columns
         private List<List<float>> elements;
         int w, h;
-        Random rng;
     }
 }
