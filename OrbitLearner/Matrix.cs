@@ -23,8 +23,6 @@ namespace OrbitLearner
 
         public void Randomize()
         {
-            var rng = new Random();
-
             foreach (var row in elements)
             {
                 for (int i = 0; i < w; i++)
@@ -58,5 +56,6 @@ namespace OrbitLearner
         //inner list is rows, outer list is columns
         private List<List<float>> elements;
         int w, h;
+        static Random rng = new Random();
     }
 }
