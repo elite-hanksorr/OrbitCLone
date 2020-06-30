@@ -41,5 +41,8 @@
     <Compile Include="Brain.cs" />
     <Compile Include="Matrix.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="TensorFlow.NET" Version="0.15.1" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
