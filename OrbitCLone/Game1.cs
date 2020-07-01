@@ -19,7 +19,7 @@ namespace OrbitCLone
             NewGame
         }
 
-        GameState state = GameState.PlayMode;
+        GameState state = GameState.TrainMode;
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -78,10 +78,10 @@ namespace OrbitCLone
 
             enemyPlanets = new List<EnemyPlanet>();
 
-            tinyPlanetData = new PlanetData(0.2f, 15);
-            smallPlanetData = new PlanetData(0.15f, 20);
-            mediumPlanetData = new PlanetData(0.10f, 23);
-            largePlanetData = new PlanetData(0.07f, 28);
+            tinyPlanetData = new PlanetData(0.2f, 15, 0);
+            smallPlanetData = new PlanetData(0.15f, 20, 1);
+            mediumPlanetData = new PlanetData(0.10f, 23, 2);
+            largePlanetData = new PlanetData(0.07f, 28, 3);
 
             base.Initialize();
         }

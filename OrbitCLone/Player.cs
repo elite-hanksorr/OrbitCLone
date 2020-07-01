@@ -23,7 +23,7 @@ namespace OrbitCLone
         public override void Update(GameTime gt)
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
-                Radius += 7;
+                Radius += (400 * (float)gt.ElapsedGameTime.TotalSeconds);
 
             position = new Vector2(centerOfAttraction.X + (float)Math.Cos(Angle) * Radius, centerOfAttraction.Y + (float)Math.Sin(Angle) * Radius);
             boundingSphere = new BoundingSphere(new Vector3(position, 0), Size);

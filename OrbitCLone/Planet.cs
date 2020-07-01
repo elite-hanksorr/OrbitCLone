@@ -14,11 +14,13 @@ namespace OrbitCLone
         public float Speed { get; set; }
         public Texture2D Texture { get; set; }
         public int Size { get; set; }
+        public int Id { get; set; }
 
-        public PlanetData(float speed, int size)
+        public PlanetData(float speed, int size, int id)
         {
             Speed = speed;
             Size = size;
+            Id = id;
         }
     }
 
