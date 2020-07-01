@@ -5,7 +5,7 @@ pkgdesc='Cheap OrbitXL ripoff for the sake of dank AI learning'
 url='git+https://github.com/elite-hanksorr/OrbitCLone'
 arch=('x86_64')
 license=()
-depends=('mono' 'monogame-bin')
+depends=('mono')
 makedepends=('mono-msbuild')
 optdepends=('mono-tools')
 provides=('orbtclone')
@@ -18,9 +18,14 @@ pkgver() {
   if [ -n "$ver" ]; then echo "$ver"; else echo 0.0.0; fi
 }
 
+prepare() {
+  cd "$pkgname"
+  msbuild /t:Restore
+}
+
 build() {
   cd "$pkgname"
-  msbuild /t:Build /p:Configuration=Release OrbitCLone.sln
+  msbuild /t:Build /p:Configuration=Release
 }
 
 package() {

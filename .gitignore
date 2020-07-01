@@ -4,3 +4,6 @@
 # Build stuff
 bin/
 obj/
+
+# Old-style NuGet packages directory
+packages/
