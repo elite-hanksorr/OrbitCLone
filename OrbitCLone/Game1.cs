@@ -19,7 +19,7 @@ namespace OrbitCLone
             NewGame
         }
 
-        GameState state = GameState.TrainMode;
+        GameState state = GameState.PlayMode;
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
