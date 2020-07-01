@@ -11,6 +11,8 @@ namespace OrbitCLone
 {
     class Player : Planet
     {
+        public float VerticalSpeed { get; set; }
+
         public Player()
         {
             Radius = 400.0f;
@@ -18,12 +20,13 @@ namespace OrbitCLone
             Speed = 2;
             Score = 0;
             Size = 22;
+            VerticalSpeed = 400;
         }
 
         public override void Update(GameTime gt)
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
-                Radius += (400 * (float)gt.ElapsedGameTime.TotalSeconds);
+                Radius += VerticalSpeed * (float)gt.ElapsedGameTime.TotalSeconds;
 
             position = new Vector2(centerOfAttraction.X + (float)Math.Cos(Angle) * Radius, centerOfAttraction.Y + (float)Math.Sin(Angle) * Radius);
             boundingSphere = new BoundingSphere(new Vector3(position, 0), Size);
