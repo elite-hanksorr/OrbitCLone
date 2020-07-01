@@ -191,10 +191,6 @@ namespace OrbitCLone
                             }
                         }
 
-                        //test finding nearest planet
-                        var distances = new List<(float, EnemyPlanet)>(enemyPlanets.Count);
-                        var angles = new List<(float, EnemyPlanet)>(enemyPlanets.Count);
-
                         outline.position = enemyPlanets
                             .OrderBy((enemy) => {
                                     var angle = (enemy.Angle - player.Angle) % (2 * Math.PI);
@@ -205,16 +201,6 @@ namespace OrbitCLone
                             .Select((e) => e.position)
                             .DefaultIfEmpty(new Vector2(0, 0))
                             .First();
-
-                        distances.Sort(
-                                ((float, EnemyPlanet) x, (float, EnemyPlanet) y) => (int)(x.Item1 - y.Item1));
-
-                        if (distances.Count != 0)
-                        {
-                            var closest = distances[0].Item2;
-                            outline.position = closest.position;
-                        }
-
 
                         if (player.boundingSphere.Intersects(blackHole.boundingSphere))
                             gameOver = true;
