@@ -31,27 +31,33 @@ namespace OrbitCLone
             position = new Vector2(centerOfAttraction.X + (float)Math.Cos(Angle) * Radius, centerOfAttraction.Y + (float)Math.Sin(Angle) * Radius);
             boundingSphere = new BoundingSphere(new Vector3(position, 0), Size);
 
-            double previousAngle = Angle;
             Angle = ((Angle + Speed * (float)gt.ElapsedGameTime.TotalSeconds) % (2 * Math.PI));
-            if (Angle < previousAngle)
-                Score++;
 
-            if (Radius > 430)
+            if (Radius >= 430)
             {
                 Radius = 430;
-                Speed = 2.0f;
+                Speed = 1.5f;
             }
             else if (Radius > 300)
             {
                 Speed = 2.0f;
+                counter += 2 * (float)gt.ElapsedGameTime.TotalSeconds;
             }
             else if (Radius > 200)
             {
                 Speed = 2.5f;
+                counter += 2.5f * (float)gt.ElapsedGameTime.TotalSeconds;
             }
             else if (Radius > 100)
             {
                 Speed = 3;
+                counter += 3 * (float)gt.ElapsedGameTime.TotalSeconds;
+            }
+
+            if (counter > threshold)
+            {
+                Score++;
+                counter = 0;
             }
 
             Radius -= 200 * (float)gt.ElapsedGameTime.TotalSeconds;
@@ -60,5 +66,7 @@ namespace OrbitCLone
         }
 
         public int Score { get; set; }
+        protected float counter = 0;
+        protected static float threshold = 5; 
     }
 }

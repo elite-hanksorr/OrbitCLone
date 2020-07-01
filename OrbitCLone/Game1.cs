@@ -272,6 +272,20 @@ namespace OrbitCLone
                         //prepare next generation
                         List<Agent> newAgents = new List<Agent>(agents.Count);
 
+                        //get best agent and put baby straight into next gen without mutation
+                        int highScore = 0;
+                        var bestAgent = agents[0];
+                        foreach (var agent in agents)
+                        {
+                            if (agent.Score > highScore)
+                            {
+                                highScore = agent.Score;
+                                bestAgent = agent;
+                            }
+                        }
+
+                        newAgents.Add(bestAgent.AsexuallyReproduce());
+
                         Agent selectParent()
                         {
                             int choice = rng.Next(0, fitnessSum);
@@ -286,7 +300,7 @@ namespace OrbitCLone
                             return null;
                         }
 
-                        for (int i = 0; i < agents.Count; i++)
+                        for (int i = 0; i < agents.Count - 1; i++)
                         {
                             var parent = selectParent();
                             var baby = parent.AsexuallyReproduce();
