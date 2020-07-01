@@ -33,7 +33,7 @@ namespace OrbitCLone
 
         PlanetData tinyPlanetData, smallPlanetData, mediumPlanetData, largePlanetData;
 
-        //GameEntity outline;
+        GameEntity outline;
 
         List<EnemyPlanet> enemyPlanets;
 
@@ -62,8 +62,11 @@ namespace OrbitCLone
             };
             blackHole.boundingSphere = new BoundingSphere(new Vector3(blackHole.position, 0), 80);
 
-            if (state == GameState.PlayMode) player = new Player();
-            //outline = new GameEntity();
+            if (state == GameState.PlayMode)
+            {
+                player = new Player();
+                outline = new GameEntity();
+            }
             if (state == GameState.TrainMode)
             {
                 agents = new List<Agent>(100);
@@ -95,7 +98,10 @@ namespace OrbitCLone
             blackHole.sprite = Content.Load<Texture2D>("Sprites/OCL_BlackHole");
 
             if (state == GameState.PlayMode)
+            {
                 player.sprite = Content.Load<Texture2D>("Sprites/OCL_Player");
+                outline.sprite = Content.Load<Texture2D>("Sprites/OCL_Outline");
+            }
 
             if (state == GameState.TrainMode)
             {
@@ -105,7 +111,6 @@ namespace OrbitCLone
                     agent.sprite = agentSprite;
                 }
             }
-            //outline.sprite = Content.Load<Texture2D>("Sprites/OCL_Outline");
 
             tinyPlanetData.Texture = Content.Load<Texture2D>("Sprites/OCL_TinyPlanet");
             smallPlanetData.Texture = Content.Load<Texture2D>("Sprites/OCL_SmallPlanet");
@@ -186,6 +191,54 @@ namespace OrbitCLone
                             {
                                 enemyPlanets.Remove(planet);
                                 i--;
+                            }
+                        }
+
+                        //test finding nearest planet
+                        var distances = new List<(float, EnemyPlanet)>(enemyPlanets.Count);
+                        var angles = new List<(float, EnemyPlanet)>(enemyPlanets.Count);
+
+                        outline.position = new Vector2(0, 0);
+                        for (int i = 0; i < enemyPlanets.Count; i++)
+                        {
+                            EnemyPlanet e = enemyPlanets[i];
+                            float d = (float)Math.Sqrt((player.position.X - e.position.X) * (player.position.X - e.position.X) + (player.position.Y - e.position.Y) * (player.position.Y - e.position.Y));
+                            double pa = player.Angle;
+                            double ea = e.Angle;
+                            float a;
+
+                            if (ea > pa)
+                                a = (float)(ea - pa);
+                            else
+                                a = (float)(Math.PI * 2 - pa + ea);
+
+                            distances.Add((d, e));
+                            angles.Add((a, e));
+
+                            distances.Sort(
+                                ((float, EnemyPlanet) x, (float, EnemyPlanet) y) => (int)(x.Item1 - y.Item1));
+
+                            angles.Sort(
+                                ((float, EnemyPlanet) x, (float, EnemyPlanet) y) => (int)(x.Item1 - y.Item1));
+
+                            var closestByDistance = distances[0].Item2;
+                            var closestByAngle = angles[0].Item2;
+
+                            int closestByDistanceAngleIndex = angles.FindIndex(
+                                ((float, EnemyPlanet) x) => x.Item2 == closestByDistance);
+
+                            int closestByAngleDistanceIndex = distances.FindIndex(
+                                ((float, EnemyPlanet) x) => x.Item2 == closestByAngle);
+
+                            if (closestByAngleDistanceIndex < closestByDistanceAngleIndex)
+                            {
+                                //angle
+                                outline.position = closestByAngle.position;
+                            }
+                            else
+                            {
+                                //distance
+                                outline.position = closestByDistance.position;
                             }
                         }
 
@@ -272,6 +325,7 @@ namespace OrbitCLone
                     Vector2 textPos = new Vector2(graphics.PreferredBackBufferWidth / 2, 50);
                     spriteBatch.DrawString(font, "Score: " + player.Score.ToString(), textPos, Color.White, 0, textMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
                     player.Draw(spriteBatch);
+                    outline.Draw(spriteBatch);
                     break;
                 }
                 case GameState.TrainMode:
@@ -287,7 +341,6 @@ namespace OrbitCLone
                 default:
                     break;
             }
-            //outline.Draw(spriteBatch);
             spriteBatch.End();
 
             base.Draw(gameTime);
