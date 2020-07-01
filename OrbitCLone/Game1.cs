@@ -42,8 +42,6 @@ namespace OrbitCLone
 
         Random rng;
 
-        Brain brain;
-
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -84,8 +82,6 @@ namespace OrbitCLone
             smallPlanetData = new PlanetData(0.15f, 20);
             mediumPlanetData = new PlanetData(0.10f, 23);
             largePlanetData = new PlanetData(0.07f, 28);
-
-            brain = new Brain(new List<int> { 3, 2, 1 });
 
             base.Initialize();
         }
@@ -199,7 +195,7 @@ namespace OrbitCLone
                         var angles = new List<(float, EnemyPlanet)>(enemyPlanets.Count);
 
                         outline.position = new Vector2(0, 0);
-                        for (int i = 0; i < enemyPlanets.Count; i++)
+                        /*for (int i = 0; i < enemyPlanets.Count; i++)
                         {
                             EnemyPlanet e = enemyPlanets[i];
                             float d = (float)Math.Sqrt((player.position.X - e.position.X) * (player.position.X - e.position.X) + (player.position.Y - e.position.Y) * (player.position.Y - e.position.Y));
@@ -240,7 +236,33 @@ namespace OrbitCLone
                                 //distance
                                 outline.position = closestByDistance.position;
                             }
+                        }*/
+                        foreach (var planet in enemyPlanets)
+                        {
+                            double pa = player.Angle;
+                            double ea = planet.Angle;
+                            float a;
+
+                            if (ea > pa)
+                                a = (float)(ea - pa);
+                            else
+                                a = (float)(Math.PI * 2 - pa + ea);
+
+                            float r = planet.Radius - player.Radius;
+
+                            float d = a * a + r * r;
+                            distances.Add((d, planet));
                         }
+
+                        distances.Sort(
+                                ((float, EnemyPlanet) x, (float, EnemyPlanet) y) => (int)(x.Item1 - y.Item1));
+
+                        if (distances.Count != 0)
+                        {
+                            var closest = distances[0].Item2;
+                            outline.position = closest.position;
+                        }
+
 
                         if (player.boundingSphere.Intersects(blackHole.boundingSphere))
                             gameOver = true;
