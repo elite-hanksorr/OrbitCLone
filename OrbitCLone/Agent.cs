@@ -10,7 +10,7 @@ using OrbitLearner;
 
 namespace OrbitCLone
 {
-    class Agent : Planet
+    class Agent : Player
     {
         public Agent()
         {
@@ -21,6 +21,7 @@ namespace OrbitCLone
             Size = 22;
             AgentBrain = new Brain(new List<int> { 26, 15, 10, 1 });
             Alive = true;
+            VerticalSpeed = 400.0f;
         }
 
         public void Update(List<EnemyPlanet> enemies, BoundingSphere centerLimit, GameTime gt)
@@ -70,33 +71,18 @@ namespace OrbitCLone
         }
 
         public bool Alive { get; set; }
-        public int Score { get; set; }
         public Brain AgentBrain { get; set; }
 
         private List<float> genInputs(List<EnemyPlanet> enemies)
         {
-            //generate the inputs for the brain based on the position of enemies
-            List<(float, EnemyPlanet)> distances = new List<(float, EnemyPlanet)>(enemies.Count);
-
-            foreach (var e in enemies)
+            enemies = enemies.OrderBy((enemy) =>
             {
-                double pa = Angle;
-                double ea = e.Angle;
-                float a;
-
-                if (ea > pa)
-                    a = (float)(ea - pa);
-                else
-                    a = (float)(Math.PI * 2 - pa + ea);
-
-                float r = e.Radius - Radius;
-
-                float d = a * a + r * r;
-                distances.Add((d, e));
-            }
-
-            distances.Sort(
-                    ((float, EnemyPlanet) x, (float, EnemyPlanet) y) => (int)(x.Item1 - y.Item1));
+                var angle = (enemy.Angle - Angle) % (2 * Math.PI);
+                angle = angle >= 0 ? angle : angle + 2 * Math.PI;
+                var radius = Radius - enemy.Radius;
+                return Math.Pow(angle / Speed, 2) + Math.Pow(radius / VerticalSpeed, 2);
+            })
+            .ToList();
 
             List<float> inputs = new List<float>(26);
             for (int i = 0; i < 26; i++)
@@ -106,11 +92,11 @@ namespace OrbitCLone
 
             for (int i = 0; i < 4; i++)
             {
-                if (distances.Count > i)
+                if (enemies.Count > i)
                 {
-                    inputs[6 * i + distances[i].Item2.PlanetId] = 1.0f;
-                    inputs[6 * i + 4] = (float)distances[i].Item2.Angle;
-                    inputs[6 * i + 5] = distances[i].Item2.Radius;
+                    inputs[6 * i + enemies[i].PlanetId] = 1.0f;
+                    inputs[6 * i + 4] = (float)enemies[i].Angle;
+                    inputs[6 * i + 5] = enemies[i].Radius;
                 }
             }
 
