@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using OrbitLearner;
 
@@ -194,65 +195,16 @@ namespace OrbitCLone
                         var distances = new List<(float, EnemyPlanet)>(enemyPlanets.Count);
                         var angles = new List<(float, EnemyPlanet)>(enemyPlanets.Count);
 
-                        outline.position = new Vector2(0, 0);
-                        /*for (int i = 0; i < enemyPlanets.Count; i++)
-                        {
-                            EnemyPlanet e = enemyPlanets[i];
-                            float d = (float)Math.Sqrt((player.position.X - e.position.X) * (player.position.X - e.position.X) + (player.position.Y - e.position.Y) * (player.position.Y - e.position.Y));
-                            double pa = player.Angle;
-                            double ea = e.Angle;
-                            float a;
-
-                            if (ea > pa)
-                                a = (float)(ea - pa);
-                            else
-                                a = (float)(Math.PI * 2 - pa + ea);
-
-                            distances.Add((d, e));
-                            angles.Add((a, e));
-
-                            distances.Sort(
-                                ((float, EnemyPlanet) x, (float, EnemyPlanet) y) => (int)(x.Item1 - y.Item1));
-
-                            angles.Sort(
-                                ((float, EnemyPlanet) x, (float, EnemyPlanet) y) => (int)(x.Item1 - y.Item1));
-
-                            var closestByDistance = distances[0].Item2;
-                            var closestByAngle = angles[0].Item2;
-
-                            int closestByDistanceAngleIndex = angles.FindIndex(
-                                ((float, EnemyPlanet) x) => x.Item2 == closestByDistance);
-
-                            int closestByAngleDistanceIndex = distances.FindIndex(
-                                ((float, EnemyPlanet) x) => x.Item2 == closestByAngle);
-
-                            if (closestByAngleDistanceIndex < closestByDistanceAngleIndex)
-                            {
-                                //angle
-                                outline.position = closestByAngle.position;
-                            }
-                            else
-                            {
-                                //distance
-                                outline.position = closestByDistance.position;
-                            }
-                        }*/
-                        foreach (var planet in enemyPlanets)
-                        {
-                            double pa = player.Angle;
-                            double ea = planet.Angle;
-                            float a;
-
-                            if (ea > pa)
-                                a = (float)(ea - pa);
-                            else
-                                a = (float)(Math.PI * 2 - pa + ea);
-
-                            float r = planet.Radius - player.Radius;
-
-                            float d = a * a + r * r;
-                            distances.Add((d, planet));
-                        }
+                        outline.position = enemyPlanets
+                            .OrderBy((enemy) => {
+                                    var angle = (enemy.Angle - player.Angle) % (2 * Math.PI);
+                                    angle = angle >= 0 ? angle : angle + 2 * Math.PI;
+                                    var radius = player.Radius - enemy.Radius;
+                                    return Math.Pow(angle / player.Speed, 2) + Math.Pow(radius / player.VerticalSpeed, 2);
+                                })
+                            .Select((e) => e.position)
+                            .DefaultIfEmpty(new Vector2(0, 0))
+                            .First();
 
                         distances.Sort(
                                 ((float, EnemyPlanet) x, (float, EnemyPlanet) y) => (int)(x.Item1 - y.Item1));
