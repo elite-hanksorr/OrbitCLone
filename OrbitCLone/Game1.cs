@@ -39,6 +39,7 @@ namespace OrbitCLone
         List<EnemyPlanet> enemyPlanets;
 
         int elapsedTime = 0;
+        int generation = 0;
         bool gameOver = false;
 
         Random rng;
@@ -258,6 +259,44 @@ namespace OrbitCLone
                             gameOver = gameOver && !agent.Alive;
                         }
 
+                    }
+                    else
+                    {
+                        //prepare new run
+                        enemyPlanets.Clear();
+
+                        //calculate fitness sum
+                        int fitnessSum = 0;
+                        foreach (var agent in agents) fitnessSum += agent.Score;
+
+                        //prepare next generation
+                        List<Agent> newAgents = new List<Agent>(agents.Count);
+
+                        Agent selectParent()
+                        {
+                            int choice = rng.Next(0, fitnessSum);
+                            int runningSum = 0;
+                            foreach (var agent in agents)
+                            {
+                                runningSum += agent.Score;
+                                if (runningSum > choice)
+                                    return agent;
+                            }
+
+                            return null;
+                        }
+
+                        for (int i = 0; i < agents.Count; i++)
+                        {
+                            var parent = selectParent();
+                            var baby = parent.AsexuallyReproduce();
+                            baby.AgentBrain.Mutate();
+                            newAgents.Add(baby);
+                        }
+
+                        agents = newAgents;
+                        generation++;
+                        gameOver = false;
                     }
                     break;
                 default:

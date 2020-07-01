@@ -32,6 +32,14 @@ namespace OrbitLearner
             }
         }
 
+        public void Mutate()
+        {
+            int wChoice = rng.Next(0, w);
+            int hChoice = rng.Next(0, h);
+
+            elements[hChoice][wChoice] += ((float)rng.NextDouble() * 10.0f - 5.0f);
+        }
+
         public List<float> Multiply(List<float> vector)
         {
             if (vector.Count != w)

@@ -24,6 +24,15 @@ namespace OrbitCLone
             VerticalSpeed = 400.0f;
         }
 
+        public Agent AsexuallyReproduce()
+        {
+            Agent myPreciousOnlyChild = new Agent();
+            myPreciousOnlyChild.sprite = sprite;
+            myPreciousOnlyChild.AgentBrain = AgentBrain;
+
+            return myPreciousOnlyChild;
+        }
+
         public void Update(List<EnemyPlanet> enemies, BoundingSphere centerLimit, GameTime gt)
         {
             if (Alive)
