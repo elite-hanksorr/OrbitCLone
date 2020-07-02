@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OrbitLearner
 {
-    class Matrix
+    public class Matrix
     {
         public Matrix(int width, int height)
         {

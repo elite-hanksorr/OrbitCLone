@@ -13,23 +13,30 @@ namespace OrbitLearner
         public Brain(List<int> shape)
         {
             //set up weight and bias augmented matrices
-            weights = new List<Matrix>();
+            Weights = new List<Matrix>();
 
             for (int i = 0; i < shape.Count - 1; i++)
             {
-                weights.Add(new Matrix(shape[i] + 1, shape[i + 1]));
+                Weights.Add(new Matrix(shape[i] + 1, shape[i + 1]));
             }
 
-            foreach (var matrix in weights)
+            foreach (var matrix in Weights)
                 matrix.Randomize();
         }
 
         public void Mutate(float mutationRate)
         {
-            if ((float)rng.NextDouble() <= mutationRate)
+            /*if ((float)rng.NextDouble() <= mutationRate)
             {
-                int weightChoice = rng.Next(0, weights.Count);
-                weights[weightChoice].Mutate();
+                int weightChoice = rng.Next(0, Weights.Count);
+                Weights[weightChoice].Mutate();
+            }*/
+
+            int numMutations = rng.Next(0, 100);
+            for (int i = 0; i < numMutations; i++)
+            {
+                int weightChoice = rng.Next(0, Weights.Count);
+                Weights[weightChoice].Mutate();
             }
         }
 
@@ -38,15 +45,17 @@ namespace OrbitLearner
             List<float> result = inputs;
             result.Add(1.0f);
 
-            foreach (var matrix in weights)
+            foreach (var matrix in Weights)
             {
                 result = matrix.Multiply(result);
                 for (int i = 0; i < result.Count; i++)
                 {
-                    if (result[i] > 0.0f)
+                    /*if (result[i] > 0.0f)
                         result[i] = 1.0f;
                     else
-                        result[i] = 0.0f;
+                        result[i] = 0.0f;*/
+
+                    result[i] = (float)(1 / (1 + Math.Pow(Math.E, -1.0 * result[i])));
                 }
                 result.Add(1.0f);
             }
@@ -55,7 +64,7 @@ namespace OrbitLearner
             return result;
         }
 
-        private List<Matrix> weights;
+        public List<Matrix> Weights { get; set; }
         private static Random rng = new Random();
     }
 }

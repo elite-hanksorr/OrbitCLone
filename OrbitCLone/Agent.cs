@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Win32;
@@ -15,7 +16,7 @@ namespace OrbitCLone
         public Agent()
         {
             Radius = 400.0f;
-            Angle = 0.0f;
+            Angle = rng.NextDouble() * Math.PI * 2;
             Speed = 2;
             Score = 0;
             Size = 22;
@@ -23,13 +24,14 @@ namespace OrbitCLone
             Alive = true;
             VerticalSpeed = 400.0f;
             Fitness = 0;
+            RunningFitness = 0;
         }
 
         public Agent AsexuallyReproduce()
         {
             Agent myPreciousOnlyChild = new Agent();
             myPreciousOnlyChild.sprite = sprite;
-            myPreciousOnlyChild.AgentBrain = AgentBrain;
+            myPreciousOnlyChild.AgentBrain.Weights = AgentBrain.Weights;
 
             return myPreciousOnlyChild;
         }
@@ -67,12 +69,12 @@ namespace OrbitCLone
                 else if (Radius > 200)
                 {
                     Speed = 2.5f;
-                    counter += 2.5f * (float)gt.ElapsedGameTime.TotalSeconds;
+                    counter += 3 * (float)gt.ElapsedGameTime.TotalSeconds;
                 }
                 else if (Radius > 100)
                 {
                     Speed = 3;
-                    counter += 3 * (float)gt.ElapsedGameTime.TotalSeconds;
+                    counter += 5 * (float)gt.ElapsedGameTime.TotalSeconds;
                 }
                 
                 if (counter > threshold)
@@ -104,12 +106,18 @@ namespace OrbitCLone
                     justDied = true;
                 }
 
-                Fitness = Score * Score + counter;
+                //Fitness = (float)Math.Pow((double)Score + counter / threshold, 2);
+                if (Fitness == 0)
+                    Fitness = Score + counter / threshold;
+                else
+                {
+                    Fitness = (Score + counter / threshold + Fitness) / 2;
+                }
             }
             else if (justDied)
             {
                 double runTime = gt.TotalGameTime.TotalSeconds - runStartTime;
-                Fitness /= (float)runTime;
+                //Fitness /= (float)runTime;
                 justDied = false;
             }
         }
@@ -118,6 +126,7 @@ namespace OrbitCLone
         public Brain AgentBrain { get; set; }
 
         public float Fitness { get; set; }
+        public float RunningFitness { get; set; }
 
         private double lastScoreIncrease = 0;
         private double runStartTime;
@@ -157,5 +166,6 @@ namespace OrbitCLone
         }
 
         private static int numInputs = 26;
+        private static Random rng = new Random();
     }
 }

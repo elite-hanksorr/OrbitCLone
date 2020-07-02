@@ -21,7 +21,7 @@ namespace OrbitCLone
         }
 
         GameState state = GameState.TrainMode;
-        const int populationSize = 100;
+        const int populationSize = 1000;
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -218,28 +218,28 @@ namespace OrbitCLone
                         {
                             elapsedTime++;
                             int highScore = FindHighestScore();
-                            int r = rng.Next(0, 100);
-                            if (r + highScore > 70)
+                            int r = rng.Next(0, 50);
+                            if (r + 2 * highScore > 20)
                                 enemyPlanets.Add(new EnemyPlanet(smallPlanetData));
 
                             if ((elapsedTime % 2) == 0)
                             {
-                                r = rng.Next(0, 100);
-                                if (r + highScore > 80)
+                                r = rng.Next(0, 50);
+                                if (r + 2 * highScore > 25)
                                     enemyPlanets.Add(new EnemyPlanet(mediumPlanetData));
                             }
 
                             if ((elapsedTime % 3) == 0)
                             {
-                                r = rng.Next(0, 100);
-                                if (r + highScore > 90)
+                                r = rng.Next(0, 50);
+                                if (r + 2 * highScore > 30)
                                     enemyPlanets.Add(new EnemyPlanet(largePlanetData));
                             }
 
                             if ((elapsedTime % 5) == 0)
                             {
-                                r = rng.Next(0, 100);
-                                if (r + highScore > 95)
+                                r = rng.Next(0, 50);
+                                if (r + 2 * highScore > 35)
                                     enemyPlanets.Add(new EnemyPlanet(tinyPlanetData));
                             }
                         }
@@ -274,7 +274,7 @@ namespace OrbitCLone
 
                         //calculate fitness sum
                         float fitnessSum = 0;
-                        foreach (var agent in agents) fitnessSum += agent.Fitness;
+                        foreach (var agent in agents) fitnessSum += agent.Fitness * agent.Fitness;
 
                         //prepare next generation
                         List<Agent> newAgents = new List<Agent>(agents.Count);
@@ -284,18 +284,17 @@ namespace OrbitCLone
                         {
                             var newAgent = agents[i].AsexuallyReproduce();
                             newAgent.Init(gameTime);
-                            if (i == 0)
-                                newAgent.sprite = bestAgentSprite;
                             newAgents.Add(newAgent);
                         }
 
-                        //put the worst 10% straight into next gen
-                        /*for (int i = populationSize - 1; i >= populationSize - populationSize / 10; i--)
+                        //make 10% completely new agents
+                        for (int i = populationSize - 1; i >= populationSize - populationSize / 10; i--)
                         {
-                            var newAgent = agents[i].AsexuallyReproduce();
+                            var newAgent = new Agent();
                             newAgent.Init(gameTime);
+                            newAgent.sprite = agentSprite;
                             newAgents.Add(newAgent);
-                        }*/
+                        }
 
                         Agent selectParent()
                         {
@@ -303,7 +302,7 @@ namespace OrbitCLone
                             float runningSum = 0;
                             foreach (var agent in agents)
                             {
-                                runningSum += agent.Fitness;
+                                runningSum += agent.Fitness * agent.Fitness;
                                 if (runningSum > choice)
                                     return agent;
                             }
@@ -311,12 +310,12 @@ namespace OrbitCLone
                             return null;
                         }
 
-                        for (int i = 0; i < populationSize - populationSize / 4; i++)
+                        for (int i = 0; i < populationSize - populationSize / 4 - populationSize / 10; i++)
                         {
                             var parent = selectParent();
                             
                             var baby = parent.AsexuallyReproduce();
-                            baby.AgentBrain.Mutate(0.1f);
+                            baby.AgentBrain.Mutate(1.0f);
                             baby.Init(gameTime);
                             newAgents.Add(baby);
                         }
