@@ -16,7 +16,7 @@ namespace OrbitCLone
             Initialize(p);
             PlanetId = p.Id;
             Radius = 1000.0f;
-            Angle = new Random().NextDouble() * Math.PI;
+            Angle = rng.NextDouble() * Math.PI;
             position = new Vector2(centerOfAttraction.X + (float)Math.Cos(Angle) * Radius, centerOfAttraction.Y + (float)Math.Sin(Angle) * Radius);
             direction = centerOfAttraction - position;
         }
@@ -32,5 +32,6 @@ namespace OrbitCLone
 
         private Vector2 direction;
         public int PlanetId;
+        private static Random rng = new Random();
     }
 }

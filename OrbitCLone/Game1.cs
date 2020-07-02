@@ -21,6 +21,7 @@ namespace OrbitCLone
         }
 
         GameState state = GameState.TrainMode;
+        const int populationSize = 100;
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -30,6 +31,7 @@ namespace OrbitCLone
 
         List<Agent> agents;
         Texture2D agentSprite;
+        Texture2D bestAgentSprite;
         GameEntity blackHole;
 
         PlanetData tinyPlanetData, smallPlanetData, mediumPlanetData, largePlanetData;
@@ -39,7 +41,7 @@ namespace OrbitCLone
         List<EnemyPlanet> enemyPlanets;
 
         int elapsedTime = 0;
-        int generation = 0;
+        int generation = 1;
         bool gameOver = false;
 
         Random rng;
@@ -69,8 +71,8 @@ namespace OrbitCLone
             }
             if (state == GameState.TrainMode)
             {
-                agents = new List<Agent>(100);
-                for (int i = 0; i < 100; i++)
+                agents = new List<Agent>(populationSize);
+                for (int i = 0; i < populationSize; i++)
                 {
                     agents.Add(new Agent());
                 }
@@ -104,6 +106,7 @@ namespace OrbitCLone
             if (state == GameState.TrainMode)
             {
                 agentSprite = Content.Load<Texture2D>("Sprites/OCL_Player");
+                bestAgentSprite = Content.Load<Texture2D>("Sprites/OCL_BestPlayer");
                 foreach (var agent in agents)
                 {
                     agent.sprite = agentSprite;
@@ -264,35 +267,43 @@ namespace OrbitCLone
                     {
                         //prepare new run
                         enemyPlanets.Clear();
+                        enemyPlanets.Add(new EnemyPlanet(smallPlanetData));
+
+                        //sort agents by fitness
+                        agents.Sort((Agent a1, Agent a2) => (int)Math.Floor(a1.Fitness - a2.Fitness));
 
                         //calculate fitness sum
-                        int fitnessSum = 0;
-                        foreach (var agent in agents) fitnessSum += agent.Score;
+                        float fitnessSum = 0;
+                        foreach (var agent in agents) fitnessSum += agent.Fitness;
 
                         //prepare next generation
                         List<Agent> newAgents = new List<Agent>(agents.Count);
 
-                        //get best agent and put baby straight into next gen without mutation
-                        int highScore = 0;
-                        var bestAgent = agents[0];
-                        foreach (var agent in agents)
+                        //put best 25% straight into next gen
+                        for (int i = 0; i < populationSize / 4; i++)
                         {
-                            if (agent.Score > highScore)
-                            {
-                                highScore = agent.Score;
-                                bestAgent = agent;
-                            }
+                            var newAgent = agents[i].AsexuallyReproduce();
+                            newAgent.Init(gameTime);
+                            if (i == 0)
+                                newAgent.sprite = bestAgentSprite;
+                            newAgents.Add(newAgent);
                         }
 
-                        newAgents.Add(bestAgent.AsexuallyReproduce());
+                        //put the worst 10% straight into next gen
+                        /*for (int i = populationSize - 1; i >= populationSize - populationSize / 10; i--)
+                        {
+                            var newAgent = agents[i].AsexuallyReproduce();
+                            newAgent.Init(gameTime);
+                            newAgents.Add(newAgent);
+                        }*/
 
                         Agent selectParent()
                         {
-                            int choice = rng.Next(0, fitnessSum);
-                            int runningSum = 0;
+                            float choice = (float)rng.NextDouble() * fitnessSum;
+                            float runningSum = 0;
                             foreach (var agent in agents)
                             {
-                                runningSum += agent.Score;
+                                runningSum += agent.Fitness;
                                 if (runningSum > choice)
                                     return agent;
                             }
@@ -300,11 +311,13 @@ namespace OrbitCLone
                             return null;
                         }
 
-                        for (int i = 0; i < agents.Count - 1; i++)
+                        for (int i = 0; i < populationSize - populationSize / 4; i++)
                         {
                             var parent = selectParent();
+                            
                             var baby = parent.AsexuallyReproduce();
-                            baby.AgentBrain.Mutate();
+                            baby.AgentBrain.Mutate(0.1f);
+                            baby.Init(gameTime);
                             newAgents.Add(baby);
                         }
 
@@ -344,11 +357,15 @@ namespace OrbitCLone
                 case GameState.TrainMode:
                 {
                     int highScore = FindHighestScore();
-                    Vector2 textMiddlePoint = font.MeasureString("Score: " + highScore.ToString());
+                    Vector2 topTextMiddlePoint = font.MeasureString("Score: " + highScore.ToString());
                     Vector2 textPos = new Vector2(graphics.PreferredBackBufferWidth / 2, 50);
-                    spriteBatch.DrawString(font, "Score: " + highScore.ToString(), textPos, Color.White, 0, textMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
-                    foreach (var agent in agents)
-                        agent.Draw(spriteBatch);
+                    spriteBatch.DrawString(font, "Score: " + highScore.ToString(), textPos, Color.White, 0, topTextMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
+
+                    Vector2 bottomTextMiddlePoint = font.MeasureString("generation: " + generation.ToString());
+                    textPos = new Vector2(graphics.PreferredBackBufferWidth / 2, graphics.PreferredBackBufferHeight - 20);
+                    spriteBatch.DrawString(font, "generation: " + generation.ToString(), textPos, Color.White, 0, bottomTextMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
+                    for (int i = agents.Count - 1; i > 0; i--)
+                        agents[i].Draw(spriteBatch);
                     break;
                 }
                 default:

@@ -24,9 +24,9 @@ namespace OrbitLearner
                 matrix.Randomize();
         }
 
-        public void Mutate()
+        public void Mutate(float mutationRate)
         {
-            if ((float)rng.NextDouble() <= mutationChance)
+            if ((float)rng.NextDouble() <= mutationRate)
             {
                 int weightChoice = rng.Next(0, weights.Count);
                 weights[weightChoice].Mutate();
@@ -56,7 +56,6 @@ namespace OrbitLearner
         }
 
         private List<Matrix> weights;
-        private static float mutationChance = 0.02f;
         private static Random rng = new Random();
     }
 }

@@ -67,6 +67,6 @@ namespace OrbitCLone
 
         public int Score { get; set; }
         protected float counter = 0;
-        protected static float threshold = 5; 
+        protected static float threshold = 3; 
     }
 }

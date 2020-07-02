@@ -37,7 +37,7 @@ namespace OrbitLearner
             int wChoice = rng.Next(0, w);
             int hChoice = rng.Next(0, h);
 
-            elements[hChoice][wChoice] += ((float)rng.NextDouble() * 10.0f - 5.0f);
+            elements[hChoice][wChoice] = (float)rng.NextDouble() * 10.0f - 5.0f;
         }
 
         public List<float> Multiply(List<float> vector)

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Microsoft.Win32;
 using Microsoft.Xna.Framework;
 
 using OrbitLearner;
@@ -19,9 +19,10 @@ namespace OrbitCLone
             Speed = 2;
             Score = 0;
             Size = 22;
-            AgentBrain = new Brain(new List<int> { 26, 15, 10, 1 });
+            AgentBrain = new Brain(new List<int> { numInputs, 15, 10, 1 });
             Alive = true;
             VerticalSpeed = 400.0f;
+            Fitness = 0;
         }
 
         public Agent AsexuallyReproduce()
@@ -31,6 +32,12 @@ namespace OrbitCLone
             myPreciousOnlyChild.AgentBrain = AgentBrain;
 
             return myPreciousOnlyChild;
+        }
+
+        public void Init(GameTime gt)
+        {
+            lastScoreIncrease = gt.TotalGameTime.TotalSeconds;
+            runStartTime = lastScoreIncrease;
         }
 
         public void Update(List<EnemyPlanet> enemies, BoundingSphere centerLimit, GameTime gt)
@@ -67,26 +74,54 @@ namespace OrbitCLone
                     Speed = 3;
                     counter += 3 * (float)gt.ElapsedGameTime.TotalSeconds;
                 }
-
+                
                 if (counter > threshold)
                 {
                     Score++;
                     counter = 0;
+                    lastScoreIncrease = gt.TotalGameTime.TotalSeconds;
+                }
+
+                //kill agents if they haven't scored for 5 seconds
+                if (gt.TotalGameTime.TotalSeconds - lastScoreIncrease > 10)
+                {
+                    Alive = false;
+                    justDied = true;
                 }
 
                 Radius -= 200 * (float)gt.ElapsedGameTime.TotalSeconds;
 
                 foreach (var enemy in enemies)
                     if (boundingSphere.Intersects(enemy.boundingSphere))
+                    {
                         Alive = false;
+                        justDied = true;
+                    }
 
                 if (boundingSphere.Intersects(centerLimit))
+                {
                     Alive = false;
+                    justDied = true;
+                }
+
+                Fitness = Score * Score + counter;
+            }
+            else if (justDied)
+            {
+                double runTime = gt.TotalGameTime.TotalSeconds - runStartTime;
+                Fitness /= (float)runTime;
+                justDied = false;
             }
         }
 
         public bool Alive { get; set; }
         public Brain AgentBrain { get; set; }
+
+        public float Fitness { get; set; }
+
+        private double lastScoreIncrease = 0;
+        private double runStartTime;
+        private bool justDied = false;
 
         private List<float> genInputs(List<EnemyPlanet> enemies)
         {
@@ -99,8 +134,8 @@ namespace OrbitCLone
             })
             .ToList();
 
-            List<float> inputs = new List<float>(26);
-            for (int i = 0; i < 26; i++)
+            List<float> inputs = new List<float>(numInputs);
+            for (int i = 0; i < numInputs; i++)
             {
                 inputs.Add(0.0f);
             }
@@ -110,15 +145,17 @@ namespace OrbitCLone
                 if (enemies.Count > i)
                 {
                     inputs[6 * i + enemies[i].PlanetId] = 1.0f;
-                    inputs[6 * i + 4] = (float)enemies[i].Angle;
-                    inputs[6 * i + 5] = enemies[i].Radius;
+                    inputs[6 * i + 4] = (float)(enemies[i].Angle / Math.PI * 2);
+                    inputs[6 * i + 5] = enemies[i].Radius / 430;
                 }
             }
 
-            inputs[24] = (float)Angle;
-            inputs[25] = Radius;
+            inputs[24] = (float)(Angle / Math.PI * 2);
+            inputs[25] = Radius / 430;
 
             return inputs;
         }
+
+        private static int numInputs = 26;
     }
 }
