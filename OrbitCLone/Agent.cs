@@ -31,7 +31,7 @@ namespace OrbitCLone
         {
             Agent myPreciousOnlyChild = new Agent();
             myPreciousOnlyChild.sprite = sprite;
-            myPreciousOnlyChild.AgentBrain.Weights = AgentBrain.Weights;
+            myPreciousOnlyChild.AgentBrain = AgentBrain.Copy();
 
             return myPreciousOnlyChild;
         }

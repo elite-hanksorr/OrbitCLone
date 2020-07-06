@@ -12,6 +12,8 @@ namespace OrbitLearner
         //e.g. {5, 3, 2, 1} means a nn with 5 inputs, 3 and 2 neuron hidden layers, and 1 output
         public Brain(List<int> shape)
         {
+            this.Shape = shape;
+
             //set up weight and bias augmented matrices
             Weights = new List<Matrix>();
 
@@ -22,6 +24,14 @@ namespace OrbitLearner
 
             foreach (var matrix in Weights)
                 matrix.Randomize();
+        }
+
+        public Brain Copy() {
+            Brain brain = new Brain(this.Shape);
+            brain.Weights = new List<Matrix>(this.Weights.Count());
+            this.Weights.ForEach(matrix => brain.Weights.Add(matrix.Copy()));
+
+            return brain;
         }
 
         public void Mutate(float mutationRate)
@@ -64,7 +74,8 @@ namespace OrbitLearner
             return result;
         }
 
-        public List<Matrix> Weights { get; set; }
+        public List<int> Shape { get; private set; }
+        public List<Matrix> Weights { get; private set; }
         private static Random rng = new Random();
     }
 }

@@ -61,6 +61,14 @@ namespace OrbitLearner
             return output;
         }
 
+        public Matrix Copy() {
+            var copy = new Matrix(w, h);
+            copy.elements = new List<List<float>>(h);
+            this.elements.ForEach(row => copy.elements.Add(new List<float>(row)));
+
+            return copy;
+        }
+
         //inner list is rows, outer list is columns
         private List<List<float>> elements;
         int w, h;
