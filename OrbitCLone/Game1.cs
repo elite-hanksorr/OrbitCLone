@@ -81,7 +81,7 @@ namespace OrbitCLone
                 trainLog = new StreamWriter(@"train.csv", append: false, encoding: Encoding.UTF8);
                 trainLog.Write("Generation");
                 foreach (var percentile in reportPercentiles)
-                    trainLog.Write($",{percentile}%");
+                    trainLog.Write($",{percentile,5:f1}%");
 
                 trainLog.WriteLine();
                 trainLog.Flush();
@@ -288,29 +288,16 @@ namespace OrbitCLone
 
                         //log agent scores
                         {
-                            var agentScoresDict = new SortedDictionary<int, int>();
-                            foreach (var agent in agents) {
-                                if (!agentScoresDict.ContainsKey(agent.Score))
-                                    agentScoresDict.Add(agent.Score, 0);
-                                agentScoresDict[agent.Score]++;
-                            }
+                            var agentScores = agents
+                                .Select(agent => agent.Fitness)
+                                .OrderBy(x => x)
+                                .ToList();
 
-                            var agentScores = new int[FindHighestScore() + 1];
-                            foreach (var kp in agentScoresDict) {
-                                agentScores[kp.Key] = kp.Value;
-                            }
+                            trainLog.Write($"{generation,10}");
 
-                            trainLog.Write(generation);
-
-                            int seen = 0;
-                            int topScore = -1;
                             foreach (float percentile in reportPercentiles) {
-                                while (seen < agents.Count * percentile / 100.0 && topScore < agentScores.Length - 1) {
-                                    topScore++;
-                                    seen += agentScores[topScore];
-                                }
-
-                                trainLog.Write($",{topScore}");
+                                var percentileScore = agentScores[Math.Min(agentScores.Count() - 1, (int) (agentScores.Count() * percentile / 100.0))];
+                                trainLog.Write($",{percentileScore,6:f2}");
                             }
 
                             trainLog.WriteLine();
