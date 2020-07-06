@@ -319,6 +319,7 @@ namespace OrbitCLone
 
                         //sort agents by fitness
                         agents.Sort((Agent a1, Agent a2) => (int)Math.Floor(a1.Fitness - a2.Fitness));
+                        agents.Reverse();
 
                         //calculate fitness sum
                         float fitnessSum = 0;
