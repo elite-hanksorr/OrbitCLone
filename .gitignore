@@ -1,3 +1,5 @@
+*.csv
+
 # Visual Studio cache directory
 .vs/
 

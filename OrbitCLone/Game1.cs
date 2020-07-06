@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 using System;
+using System.Text;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,6 +22,8 @@ namespace OrbitCLone
             NewGame
         }
 
+        static float[] reportPercentiles = new float[]{25, 50, 75, 90, 95, 97.5f, 99, 100};
+
         GameState state = GameState.TrainMode;
         const int populationSize = 1000;
 
@@ -33,6 +37,9 @@ namespace OrbitCLone
         Texture2D agentSprite;
         Texture2D bestAgentSprite;
         GameEntity blackHole;
+
+        StreamWriter trainLog;
+        SortedDictionary<int, int> agentScoresDict = new SortedDictionary<int, int>();
 
         PlanetData tinyPlanetData, smallPlanetData, mediumPlanetData, largePlanetData;
 
@@ -71,11 +78,21 @@ namespace OrbitCLone
             }
             if (state == GameState.TrainMode)
             {
+                trainLog = new StreamWriter(@"train.csv", append: false, encoding: Encoding.UTF8);
+                trainLog.Write("Generation");
+                foreach (var percentile in reportPercentiles)
+                    trainLog.Write($",{percentile}%");
+
+                trainLog.WriteLine();
+                trainLog.Flush();
+
                 agents = new List<Agent>(populationSize);
                 for (int i = 0; i < populationSize; i++)
                 {
                     agents.Add(new Agent());
                 }
+
+                agentScoresDict.Clear();
             }
 
             rng = new Random();
@@ -268,6 +285,37 @@ namespace OrbitCLone
                         //prepare new run
                         enemyPlanets.Clear();
                         enemyPlanets.Add(new EnemyPlanet(smallPlanetData));
+
+                        //log agent scores
+                        {
+                            var agentScoresDict = new SortedDictionary<int, int>();
+                            foreach (var agent in agents) {
+                                if (!agentScoresDict.ContainsKey(agent.Score))
+                                    agentScoresDict.Add(agent.Score, 0);
+                                agentScoresDict[agent.Score]++;
+                            }
+
+                            var agentScores = new int[FindHighestScore() + 1];
+                            foreach (var kp in agentScoresDict) {
+                                agentScores[kp.Key] = kp.Value;
+                            }
+
+                            trainLog.Write(generation);
+
+                            int seen = 0;
+                            int topScore = -1;
+                            foreach (float percentile in reportPercentiles) {
+                                while (seen < agents.Count * percentile / 100.0 && topScore < agentScores.Length - 1) {
+                                    topScore++;
+                                    seen += agentScores[topScore];
+                                }
+
+                                trainLog.Write($",{topScore}");
+                            }
+
+                            trainLog.WriteLine();
+                            trainLog.Flush();
+                        }
 
                         //sort agents by fitness
                         agents.Sort((Agent a1, Agent a2) => (int)Math.Floor(a1.Fitness - a2.Fitness));
