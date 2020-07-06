@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.Xna.Framework;
+using NumSharp;
 
 using OrbitLearner;
 
@@ -19,7 +20,7 @@ namespace OrbitCLone
             Speed = 2;
             Score = 0;
             Size = 22;
-            AgentBrain = new Brain(new List<int> { 26, 15, 10, 1 });
+            AgentBrain = new Brain(new int[] { 26, 15, 10, 1 });
             Alive = true;
             VerticalSpeed = 400.0f;
         }
@@ -28,7 +29,7 @@ namespace OrbitCLone
         {
             if (Alive)
             {
-                if (AgentBrain.FeedFoward(genInputs(enemies))[0] > 0.5f)
+                if (AgentBrain.Eval(genInputs(enemies))[0] > 0.5f)
                 {
                     Radius += (400 * (float)gt.ElapsedGameTime.TotalSeconds);
                 }
@@ -73,7 +74,7 @@ namespace OrbitCLone
         public bool Alive { get; set; }
         public Brain AgentBrain { get; set; }
 
-        private List<float> genInputs(List<EnemyPlanet> enemies)
+        private NDArray genInputs(List<EnemyPlanet> enemies)
         {
             enemies = enemies.OrderBy((enemy) =>
             {
@@ -84,24 +85,16 @@ namespace OrbitCLone
             })
             .ToList();
 
-            List<float> inputs = new List<float>(26);
-            for (int i = 0; i < 26; i++)
+            var inputs = np.zeros((6, 4));
+
+            for (int i = 0; i < Math.Min(enemies.Count, 4); i++)
             {
-                inputs.Add(0.0f);
+                inputs[i, enemies[i].PlanetId] = 1.0f;
+                inputs[i, 4] = (float)enemies[i].Angle;
+                inputs[i, 5] = enemies[i].Radius;
             }
 
-            for (int i = 0; i < 4; i++)
-            {
-                if (enemies.Count > i)
-                {
-                    inputs[6 * i + enemies[i].PlanetId] = 1.0f;
-                    inputs[6 * i + 4] = (float)enemies[i].Angle;
-                    inputs[6 * i + 5] = enemies[i].Radius;
-                }
-            }
-
-            inputs[24] = (float)Angle;
-            inputs[25] = Radius;
+            inputs = np.concatenate((inputs.flatten(), Angle, Radius));
 
             return inputs;
         }

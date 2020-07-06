@@ -1,51 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using static Tensorflow.Binding;
+using Tensorflow;
+using NumSharp;
 
 namespace OrbitLearner
 {
     public class Brain
     {
+        public Tensor inputs;
+        public Tensor model;
+
         //shape input describes the shape of the nn
         //e.g. {5, 3, 2, 1} means a nn with 5 inputs, 3 and 2 neuron hidden layers, and 1 output
-        public Brain(List<int> shape)
+        public Brain(int[] shape)
         {
-            //set up weight and bias augmented matrices
-            weights = new List<Matrix>();
+            if (shape.Length == 0)
+                throw new ArgumentOutOfRangeException("layers cannot be empty");
 
-            for (int i = 0; i < shape.Count - 1; i++)
-            {
-                weights.Add(new Matrix(shape[i] + 1, shape[i + 1]));
+            inputs = tf.placeholder(tf.float32, shape[0]);
+            var x = inputs;
+
+            foreach (var n in shape) {
+                var W = tf.get_variable("W", shape: new int[]{n, x.dims[0]}, initializer: tf.glorot_uniform_initializer);
+                var b = tf.get_variable("b", shape: n, initializer: tf.zeros_initializer);
+                x = W * x + b;
             }
 
-            foreach (var matrix in weights)
-                matrix.Randomize();
+            model = x;
         }
 
-        public List<float> FeedFoward(List<float> inputs)
+        public NDArray Eval(NDArray inputs)
         {
-            List<float> result = inputs;
-            result.Add(1.0f);
-
-            foreach (var matrix in weights)
+            using (var sess = tf.Session())
             {
-                result = matrix.Multiply(result);
-                for (int i = 0; i < result.Count; i++)
+                var result = sess.run(model, feed_dict: new FeedItem[]
                 {
-                    if (result[i] > 0.0f)
-                        result[i] = 1.0f;
-                    else
-                        result[i] = 0.0f;
-                }
-                result.Add(1.0f);
+                    new FeedItem(this.inputs, inputs)
+                });
+
+                return result;
             }
-
-            result.RemoveAt(result.Count - 1);
-            return result;
         }
-
-        private List<Matrix> weights;
     }
 }
