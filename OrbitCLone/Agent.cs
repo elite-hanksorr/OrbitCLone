@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 using OrbitLearner;
 
@@ -117,11 +118,18 @@ namespace OrbitCLone
             }
             else if (justDied)
             {
-                double runTime = gt.TotalGameTime.TotalSeconds - runStartTime;
+                diedAt = gt.TotalGameTime.TotalSeconds;
                 //Fitness /= (float)runTime;
                 justDied = false;
             }
         }
+
+        public override void Draw(SpriteBatch sb, GameTime gt) {
+            float alpha = Alive ? 1.0f : Math.Max(0.0f, 1.0f - (float) (gt.TotalGameTime.TotalSeconds - diedAt) / FADE_TIME);
+            sb.Draw(sprite, position, null, new Color(alpha, alpha, alpha, alpha), 0f, new Vector2(sprite.Width / 2, sprite.Height / 2), Vector2.One, SpriteEffects.None, 0f);
+        }
+
+        protected const float FADE_TIME = 3.0f;
 
         public bool Alive { get; set; }
         public Brain AgentBrain { get; set; }
@@ -131,6 +139,7 @@ namespace OrbitCLone
 
         private double lastScoreIncrease = 0;
         private double runStartTime;
+        private double diedAt;
         private bool justDied = false;
 
         private List<float> genInputs(List<EnemyPlanet> enemies)
