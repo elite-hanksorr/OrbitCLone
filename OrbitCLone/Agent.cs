@@ -20,7 +20,7 @@ namespace OrbitCLone
             Speed = 2;
             Score = 0;
             Size = 22;
-            AgentBrain = new Brain(new List<int> { numInputs, 15, 10, 1 });
+            AgentBrain = new Brain(new List<int> { 6 * numPlanetInputs + 1, 15, 10, 1 });
             Alive = true;
             VerticalSpeed = 400.0f;
             Fitness = 0;
@@ -143,29 +143,31 @@ namespace OrbitCLone
             })
             .ToList();
 
+            int numInputs = 6 * numPlanetInputs + 1;
             List<float> inputs = new List<float>(numInputs);
             for (int i = 0; i < numInputs; i++)
             {
                 inputs.Add(0.0f);
             }
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < numPlanetInputs; i++)
             {
                 if (enemies.Count > i)
                 {
+                    float angle = (float)((enemies[i].Angle - Angle) / Math.PI * 2);
+                    if (angle < 0) angle += 1;
                     inputs[6 * i + enemies[i].PlanetId] = 1.0f;
-                    inputs[6 * i + 4] = (float)(enemies[i].Angle / Math.PI * 2);
+                    inputs[6 * i + 4] = angle;
                     inputs[6 * i + 5] = enemies[i].Radius / 430;
                 }
             }
 
-            inputs[24] = (float)(Angle / Math.PI * 2);
-            inputs[25] = Radius / 430;
+            inputs[inputs.Count() - 1] = Radius / 430;
 
             return inputs;
         }
 
-        private static int numInputs = 26;
+        private static int numPlanetInputs = 4;
         private static Random rng = new Random();
     }
 }
