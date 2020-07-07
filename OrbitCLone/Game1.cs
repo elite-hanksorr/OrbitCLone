@@ -396,9 +396,11 @@ namespace OrbitCLone
                     Vector2 textPos = new Vector2(graphics.PreferredBackBufferWidth / 2, 50);
                     spriteBatch.DrawString(font, "Score: " + highScore.ToString(), textPos, Color.White, 0, topTextMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
 
-                    Vector2 bottomTextMiddlePoint = font.MeasureString("generation: " + generation.ToString());
+                    int alive = agents.Where((agent) => agent.Alive).Count();
+                    string s = $"generation: {generation}\nalive: {alive}";
+                    Vector2 bottomTextMiddlePoint = font.MeasureString(s);
                     textPos = new Vector2(graphics.PreferredBackBufferWidth / 2, graphics.PreferredBackBufferHeight - 20);
-                    spriteBatch.DrawString(font, "generation: " + generation.ToString(), textPos, Color.White, 0, bottomTextMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
+                    spriteBatch.DrawString(font, s, textPos, Color.White, 0, bottomTextMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
                     for (int i = agents.Count - 1; i > 0; i--)
                         agents[i].Draw(spriteBatch);
                     break;
