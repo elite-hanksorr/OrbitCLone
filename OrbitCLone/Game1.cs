@@ -231,33 +231,12 @@ namespace OrbitCLone
                     if (!gameOver)
                     {
                         //Spawn enemy planets.
-                        if (gameTime.TotalGameTime.TotalSeconds > elapsedTime)
-                        {
-                            elapsedTime++;
-                            int highScore = FindHighestScore();
-                            int r = rng.Next(0, 50);
-                            if (r + 2 * highScore > 20)
-                                enemyPlanets.Add(new EnemyPlanet(smallPlanetData));
-
-                            if ((elapsedTime % 2) == 0)
+                        if (gameTime.TotalGameTime.TotalSeconds > elapsedTime) {
+                            if (enemyPlanets.Count() < 4)
                             {
-                                r = rng.Next(0, 50);
-                                if (r + 2 * highScore > 25)
-                                    enemyPlanets.Add(new EnemyPlanet(mediumPlanetData));
-                            }
-
-                            if ((elapsedTime % 3) == 0)
-                            {
-                                r = rng.Next(0, 50);
-                                if (r + 2 * highScore > 30)
-                                    enemyPlanets.Add(new EnemyPlanet(largePlanetData));
-                            }
-
-                            if ((elapsedTime % 5) == 0)
-                            {
-                                r = rng.Next(0, 50);
-                                if (r + 2 * highScore > 35)
-                                    enemyPlanets.Add(new EnemyPlanet(tinyPlanetData));
+                                elapsedTime++;
+                                if (rng.NextDouble() > 0.5)
+                                    enemyPlanets.Add(new EnemyPlanet(smallPlanetData));
                             }
                         }
 
