@@ -16,11 +16,12 @@ namespace OrbitCLone
         public Agent()
         {
             Radius = 400.0f;
-            Angle = rng.NextDouble() * Math.PI * 2;
+            //Angle = rng.NextDouble() * Math.PI * 2;
+            Angle = 0.0;
             Speed = 2;
             Score = 0;
             Size = 22;
-            AgentBrain = new Brain(new List<int> { 6 * numPlanetInputs + 1, 15, 10, 1 });
+            AgentBrain = new Brain(new List<int> { 2 * numPlanetInputs + 1, 10, 1 });
             Alive = true;
             VerticalSpeed = 400.0f;
             Fitness = 0;
@@ -85,7 +86,7 @@ namespace OrbitCLone
                 }
 
                 //kill agents if they haven't scored for 5 seconds
-                if (gt.TotalGameTime.TotalSeconds - lastScoreIncrease > 10)
+                if (gt.TotalGameTime.TotalSeconds - lastScoreIncrease > 5)
                 {
                     Alive = false;
                     justDied = true;
@@ -143,7 +144,7 @@ namespace OrbitCLone
             })
             .ToList();
 
-            int numInputs = 6 * numPlanetInputs + 1;
+            int numInputs = 2 * numPlanetInputs + 1;
             List<float> inputs = new List<float>(numInputs);
             for (int i = 0; i < numInputs; i++)
             {
@@ -156,9 +157,9 @@ namespace OrbitCLone
                 {
                     float angle = (float)((enemies[i].Angle - Angle) / Math.PI * 2);
                     if (angle < 0) angle += 1;
-                    inputs[6 * i + enemies[i].PlanetId] = 1.0f;
-                    inputs[6 * i + 4] = angle;
-                    inputs[6 * i + 5] = enemies[i].Radius / 430;
+                    //inputs[6 * i + enemies[i].PlanetId] = 1.0f;
+                    inputs[2 * i] = angle;
+                    inputs[2 * i + 1] = enemies[i].Radius / 430;
                 }
             }
 
@@ -167,7 +168,7 @@ namespace OrbitCLone
             return inputs;
         }
 
-        private static int numPlanetInputs = 4;
+        private static int numPlanetInputs = 10;
         private static Random rng = new Random();
     }
 }

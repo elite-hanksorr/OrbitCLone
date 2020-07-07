@@ -235,28 +235,28 @@ namespace OrbitCLone
                         {
                             elapsedTime++;
                             int highScore = FindHighestScore();
-                            int r = rng.Next(0, 50);
-                            if (r + 2 * highScore > 20)
+                            int r = rng.Next(0, 100);
+                            if (r + 2 * highScore > 70)
                                 enemyPlanets.Add(new EnemyPlanet(smallPlanetData));
 
                             if ((elapsedTime % 2) == 0)
                             {
-                                r = rng.Next(0, 50);
-                                if (r + 2 * highScore > 25)
+                                r = rng.Next(0, 100);
+                                if (r + 2 * highScore > 80)
                                     enemyPlanets.Add(new EnemyPlanet(mediumPlanetData));
                             }
 
                             if ((elapsedTime % 3) == 0)
                             {
-                                r = rng.Next(0, 50);
-                                if (r + 2 * highScore > 30)
+                                r = rng.Next(0, 100);
+                                if (r + 2 * highScore > 90)
                                     enemyPlanets.Add(new EnemyPlanet(largePlanetData));
                             }
 
                             if ((elapsedTime % 5) == 0)
                             {
-                                r = rng.Next(0, 50);
-                                if (r + 2 * highScore > 35)
+                                r = rng.Next(0, 100);
+                                if (r + 2 * highScore > 95)
                                     enemyPlanets.Add(new EnemyPlanet(tinyPlanetData));
                             }
                         }
