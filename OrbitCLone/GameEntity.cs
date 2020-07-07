@@ -17,7 +17,7 @@ namespace OrbitCLone
 
         public virtual void Update(GameTime gt) { }
 
-        public void Draw(SpriteBatch sb)
+        public virtual void Draw(SpriteBatch sb, GameTime gt)
         {
             sb.Draw(sprite, position, null, Color.White, 0f, new Vector2(sprite.Width / 2, sprite.Height / 2), Vector2.One, SpriteEffects.None, 0f);
         }

@@ -374,9 +374,9 @@ namespace OrbitCLone
             GraphicsDevice.Clear(new Color(34, 18, 57));
 
             spriteBatch.Begin();
-            blackHole.Draw(spriteBatch);
+            blackHole.Draw(spriteBatch, gameTime);
             foreach (var planet in enemyPlanets)
-                planet.Draw(spriteBatch);
+                planet.Draw(spriteBatch, gameTime);
 
             switch (state)
             {
@@ -385,8 +385,8 @@ namespace OrbitCLone
                     Vector2 textMiddlePoint = font.MeasureString("Score: " + player.Score.ToString());
                     Vector2 textPos = new Vector2(graphics.PreferredBackBufferWidth / 2, 50);
                     spriteBatch.DrawString(font, "Score: " + player.Score.ToString(), textPos, Color.White, 0, textMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
-                    player.Draw(spriteBatch);
-                    outline.Draw(spriteBatch);
+                    player.Draw(spriteBatch, gameTime);
+                    outline.Draw(spriteBatch, gameTime);
                     break;
                 }
                 case GameState.TrainMode:
@@ -398,11 +398,11 @@ namespace OrbitCLone
 
                     int alive = agents.Where((agent) => agent.Alive).Count();
                     string s = $"generation: {generation}\nalive: {alive}";
-                    Vector2 bottomTextMiddlePoint = font.MeasureString(s);
+                    Vector2 bottomTextMiddlePoint = font.MeasureString(s) / 2;
                     textPos = new Vector2(graphics.PreferredBackBufferWidth / 2, graphics.PreferredBackBufferHeight - 20);
                     spriteBatch.DrawString(font, s, textPos, Color.White, 0, bottomTextMiddlePoint, 1.5f, SpriteEffects.None, 0.5f);
                     for (int i = agents.Count - 1; i > 0; i--)
-                        agents[i].Draw(spriteBatch);
+                        agents[i].Draw(spriteBatch, gameTime);
                     break;
                 }
                 default:
