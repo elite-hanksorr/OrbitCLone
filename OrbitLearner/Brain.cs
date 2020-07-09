@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using static Tensorflow.Binding;
+
 namespace OrbitLearner
 {
     public class Brain
@@ -69,6 +71,8 @@ namespace OrbitLearner
                 }
                 result.Add(1.0f);
             }
+
+            var W = tf.Variable(-.06f, name: "weight");
 
             result.RemoveAt(result.Count - 1);
             return result;
