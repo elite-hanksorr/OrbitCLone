@@ -28,31 +28,13 @@ namespace OrbitLearner
                 var W = tf.get_variable("W", shape: new int[]{n, x.dims[0]}, initializer: tf.glorot_uniform_initializer);
                 var b = tf.get_variable("b", shape: n, initializer: tf.zeros_initializer);
                 var y = W * x + b;
-                x = (1 / (1 + Math.Pow(Math.E, -1.0 * y)));
+                x = 1 / (1 + tf.pow(Math.E, -1.0 * y));
             }
 
             model = x;
         }
 
-        public Brain Copy() {
-            Brain brain = new Brain(this.Shape);
-            brain.Weights = new List<Matrix>(this.Weights.Count());
-            this.Weights.ForEach(matrix => brain.Weights.Add(matrix.Copy()));
-
-            return brain;
-        }
-
         public NDArray Eval(NDArray inputs)
-        {
-            int numMutations = rng.Next(0, 100);
-            for (int i = 0; i < numMutations; i++)
-            {
-                int weightChoice = rng.Next(0, Weights.Count);
-                Weights[weightChoice].Mutate();
-            }
-        }
-
-        public List<float> FeedFoward(List<float> inputs)
         {
             using (var sess = tf.Session())
             {
