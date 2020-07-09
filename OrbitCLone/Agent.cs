@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Win32;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NumSharp;
 
 using OrbitLearner;
 
@@ -22,7 +23,7 @@ namespace OrbitCLone
             Speed = 2;
             Score = 0;
             Size = 22;
-            AgentBrain = new Brain(new List<int> { 2 * numPlanetInputs + 1, 10, 1 });
+            AgentBrain = new Brain(new int[] { 2 * numPlanetInputs + 1, 10, 1 });
             Alive = true;
             VerticalSpeed = 400.0f;
             Fitness = 0;
@@ -48,7 +49,7 @@ namespace OrbitCLone
         {
             if (Alive)
             {
-                if (AgentBrain.FeedFoward(genInputs(enemies))[0] > 0.5f)
+                if (AgentBrain.Eval(genInputs(enemies))[0] > 0.5f)
                 {
                     Radius += (VerticalSpeed * (float)gt.ElapsedGameTime.TotalSeconds);
                 }
@@ -142,7 +143,7 @@ namespace OrbitCLone
         private double diedAt;
         private bool justDied = false;
 
-        private List<float> genInputs(List<EnemyPlanet> enemies)
+        private NDArray genInputs(List<EnemyPlanet> enemies)
         {
             enemies = enemies.OrderBy((enemy) =>
             {
@@ -153,26 +154,18 @@ namespace OrbitCLone
             })
             .ToList();
 
-            int numInputs = 2 * numPlanetInputs + 1;
-            List<float> inputs = new List<float>(numInputs);
-            for (int i = 0; i < numInputs; i++)
+            var inputs = np.zeros((2, numPlanetInputs));
+
+            for (int i = 0; i < Math.Min(enemies.Count, numPlanetInputs); i++)
             {
-                inputs.Add(0.0f);
+                float angle = (float)((enemies[i].Angle - Angle) / Math.PI * 2);
+                if (angle < 0) angle += 1;
+                // inputs[i, enemies[i].PlanetId] = 1.0f;
+                inputs[i, 0] = angle;
+                inputs[i, 1] = enemies[i].Radius / 430.0f;
             }
 
-            for (int i = 0; i < numPlanetInputs; i++)
-            {
-                if (enemies.Count > i)
-                {
-                    float angle = (float)((enemies[i].Angle - Angle) / Math.PI * 2);
-                    if (angle < 0) angle += 1;
-                    //inputs[6 * i + enemies[i].PlanetId] = 1.0f;
-                    inputs[2 * i] = angle;
-                    inputs[2 * i + 1] = enemies[i].Radius / 430;
-                }
-            }
-
-            inputs[inputs.Count() - 1] = Radius / 430;
+            inputs = np.concatenate((inputs.flatten(), Radius / 430.0f));
 
             return inputs;
         }

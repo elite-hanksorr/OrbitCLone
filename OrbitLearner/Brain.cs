@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using static Tensorflow.Binding;
+using Tensorflow;
+using NumSharp;
 
 using static Tensorflow.Binding;
 
@@ -10,22 +11,27 @@ namespace OrbitLearner
 {
     public class Brain
     {
+        public Tensor inputs;
+        public Tensor model;
+
         //shape input describes the shape of the nn
         //e.g. {5, 3, 2, 1} means a nn with 5 inputs, 3 and 2 neuron hidden layers, and 1 output
-        public Brain(List<int> shape)
+        public Brain(int[] shape)
         {
-            this.Shape = shape;
+            if (shape.Length == 0)
+                throw new ArgumentOutOfRangeException("layers cannot be empty");
 
-            //set up weight and bias augmented matrices
-            Weights = new List<Matrix>();
+            inputs = tf.placeholder(tf.float32, shape[0]);
+            var x = inputs;
 
-            for (int i = 0; i < shape.Count - 1; i++)
-            {
-                Weights.Add(new Matrix(shape[i] + 1, shape[i + 1]));
+            foreach (var n in shape) {
+                var W = tf.get_variable("W", shape: new int[]{n, x.dims[0]}, initializer: tf.glorot_uniform_initializer);
+                var b = tf.get_variable("b", shape: n, initializer: tf.zeros_initializer);
+                var y = W * x + b;
+                x = (1 / (1 + Math.Pow(Math.E, -1.0 * y)));
             }
 
-            foreach (var matrix in Weights)
-                matrix.Randomize();
+            model = x;
         }
 
         public Brain Copy() {
@@ -36,14 +42,8 @@ namespace OrbitLearner
             return brain;
         }
 
-        public void Mutate(float mutationRate)
+        public NDArray Eval(NDArray inputs)
         {
-            /*if ((float)rng.NextDouble() <= mutationRate)
-            {
-                int weightChoice = rng.Next(0, Weights.Count);
-                Weights[weightChoice].Mutate();
-            }*/
-
             int numMutations = rng.Next(0, 100);
             for (int i = 0; i < numMutations; i++)
             {
@@ -54,32 +54,15 @@ namespace OrbitLearner
 
         public List<float> FeedFoward(List<float> inputs)
         {
-            List<float> result = inputs;
-            result.Add(1.0f);
-
-            foreach (var matrix in Weights)
+            using (var sess = tf.Session())
             {
-                result = matrix.Multiply(result);
-                for (int i = 0; i < result.Count; i++)
+                var result = sess.run(model, feed_dict: new FeedItem[]
                 {
-                    /*if (result[i] > 0.0f)
-                        result[i] = 1.0f;
-                    else
-                        result[i] = 0.0f;*/
+                    new FeedItem(this.inputs, inputs)
+                });
 
-                    result[i] = (float)(1 / (1 + Math.Pow(Math.E, -1.0 * result[i])));
-                }
-                result.Add(1.0f);
+                return result;
             }
-
-            var W = tf.Variable(-.06f, name: "weight");
-
-            result.RemoveAt(result.Count - 1);
-            return result;
         }
-
-        public List<int> Shape { get; private set; }
-        public List<Matrix> Weights { get; private set; }
-        private static Random rng = new Random();
     }
 }
