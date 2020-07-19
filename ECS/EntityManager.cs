@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,6 +10,8 @@ using Microsoft.Xna.Framework;
 
 namespace ECS
 {
+
+
     public class EntityManager
     {
         public EntityManager()
@@ -98,7 +102,7 @@ namespace ECS
             archetype_stores[arch].SetComponentData(component, entities[e.Id].arch_index);
         }
 
-        public void RemoveComponent<T>(Entity entity)
+        public void RemoveComponent<T>(Entity e)
         {
 
         }
@@ -130,11 +134,39 @@ namespace ECS
             systems.Add(system);
         }
 
+        public void RegisterSystem<T>(T system)
+            where T : ComponentSystem
+        {
+            system.SetManager(this);
+            system.Initialize();
+            systems.Add(system);
+        }
+
         public void UpdateSystems(GameTime gt)
         {
             foreach(var system in systems)
             {
                 system.OnUpdate(gt);
+            }
+
+            while (createEntityQueue.Any())
+            {
+                (Func<Archetype, Entity>, Archetype) item;
+                createEntityQueue.TryDequeue(out item);
+
+                var f = item.Item1;
+                var a = item.Item2;
+                f(a);
+            }
+
+            while (takeEntityQueue.Any())
+            {
+                (Action<Entity>, Entity) item;
+                takeEntityQueue.TryDequeue(out item);
+
+                var f = item.Item1;
+                var e = item.Item2;
+                f(e);
             }
         }
 
@@ -165,6 +197,21 @@ namespace ECS
             where T : struct, IComponent
         {
             return archetype_stores[arch].GetComponentArray<T>();
+        }
+
+        public void RequestAction(Func<Archetype, Entity> f, Archetype a)
+        {
+            createEntityQueue.Enqueue((f, a));
+        }
+
+        public void RequestAction(Action<Entity> f, Entity e)
+        {
+            takeEntityQueue.Enqueue((f, e));
+        }
+
+        public void RequestAction(Action<IComponent, Entity> f, IComponent c, Entity e)
+        {
+            setComponentQueue.Enqueue((f, c, e));
         }
 
         // Copies the components from a1[index1] to a2[index2]. a1 must be a subset of a2.
@@ -201,5 +248,7 @@ namespace ECS
         private List<int> available_ids;
         private Dictionary<Archetype, ArchetypeStorage> archetype_stores;
         private List<ComponentSystem> systems;
+        private ConcurrentQueue<(Func<Archetype, Entity>, Archetype)> createEntityQueue;
+        private ConcurrentQueue<(Action<Entity>, Entity)> takeEntityQueue;
     }
 }
