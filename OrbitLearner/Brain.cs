@@ -72,7 +72,7 @@ namespace OrbitLearner
                 result.Add(1.0f);
             }
 
-            var W = tf.Variable(-.06f, name: "weight");
+            //var W = tf.Variable(-.06f, name: "weight");
 
             result.RemoveAt(result.Count - 1);
             return result;

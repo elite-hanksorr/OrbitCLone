@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Brain.cs" />
+    <Compile Include="Genome.cs" />
     <Compile Include="Matrix.cs" />
   </ItemGroup>
   <ItemGroup>

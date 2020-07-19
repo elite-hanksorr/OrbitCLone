@@ -46,6 +46,7 @@
     <Compile Include="EnemyPlanet.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="GameEntity.cs" />
+    <Compile Include="NEAT.cs" />
     <Compile Include="Planet.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
