@@ -28,7 +28,7 @@ namespace ECS
             {
                 T0[] comps = manager.GetComponentArray<T0>(archetype);
 
-                for (int i = 0; i < comps.Length; i++)
+                for (int i = 0; i < manager.GetArchetypeSize(archetype); i++)
                 {
                     action(ref comps[i]);
                 }
@@ -68,7 +68,7 @@ namespace ECS
                 T1[] c2s = manager.GetComponentArray<T1>(archetype);
                 T2[] c3s = manager.GetComponentArray<T2>(archetype);
 
-                for (int i = 0; i < c1s.Length; i++)
+                for (int i = 0; i < manager.GetArchetypeSize(archetype); i++)
                 {
                     action(ref c1s[i], ref c2s[i], ref c3s[i]);
                 }
@@ -91,7 +91,7 @@ namespace ECS
                 T2[] c3s = manager.GetComponentArray<T2>(archetype);
                 T3[] c4s = manager.GetComponentArray<T3>(archetype);
 
-                for (int i = 0; i < c1s.Length; i++)
+                for (int i = 0; i < manager.GetArchetypeSize(archetype); i++)
                 {
                     action(ref c1s[i], ref c2s[i], ref c3s[i], ref c4s[i]);
                 }

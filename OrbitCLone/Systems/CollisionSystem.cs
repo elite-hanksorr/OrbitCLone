@@ -28,7 +28,8 @@ namespace OrbitCLone.Systems
                 {
                     if(player_collider.Collider.Intersects(enemy_collider.Collider))
                     {
-                        entityManager.RequestAction(entityManager.DeleteEntity, player_entitiy);
+                        //entityManager.RequestAction(entityManager.DeleteEntity, player_entitiy);
+                        entityManager.RequestHalt();
                     }
                 });
             });
@@ -42,7 +43,8 @@ namespace OrbitCLone.Systems
                 {
                     if (player_collider.Collider.Intersects(bh_collider.Collider))
                     {
-                        entityManager.RequestAction(entityManager.DeleteEntity, player_entity);
+                        //entityManager.RequestAction(entityManager.DeleteEntity, player_entity);
+                        entityManager.RequestHalt();
                     }
                 });
             });

@@ -10,8 +10,6 @@ using Microsoft.Xna.Framework;
 
 namespace ECS
 {
-
-
     public class EntityManager
     {
         public EntityManager()
@@ -20,6 +18,10 @@ namespace ECS
             available_ids = new List<int>();
             archetype_stores = new Dictionary<Archetype, ArchetypeStorage>();
             systems = new List<ComponentSystem>();
+            createEntityQueue = new ConcurrentQueue<(Func<Archetype, Entity>, Archetype)>();
+            takeEntityQueue = new ConcurrentQueue<(Action<Entity>, Entity)>();
+            running = true;
+            haltRequest = false;
         }
 
         public Entity CreateEntity(Archetype archetype)
@@ -142,9 +144,9 @@ namespace ECS
             systems.Add(system);
         }
 
-        public void UpdateSystems(GameTime gt)
+        public bool UpdateSystems(GameTime gt)
         {
-            foreach(var system in systems)
+            foreach (var system in systems)
             {
                 system.OnUpdate(gt);
             }
@@ -168,6 +170,11 @@ namespace ECS
                 var e = item.Item2;
                 f(e);
             }
+
+            if (haltRequest)
+                running = false;
+
+            return running;
         }
 
         public Archetype CreateArchetype(params Type[] componentTypes)
@@ -209,9 +216,9 @@ namespace ECS
             takeEntityQueue.Enqueue((f, e));
         }
 
-        public void RequestAction(Action<IComponent, Entity> f, IComponent c, Entity e)
+        public void RequestHalt()
         {
-            setComponentQueue.Enqueue((f, c, e));
+            haltRequest = true;
         }
 
         // Copies the components from a1[index1] to a2[index2]. a1 must be a subset of a2.
@@ -250,5 +257,7 @@ namespace ECS
         private List<ComponentSystem> systems;
         private ConcurrentQueue<(Func<Archetype, Entity>, Archetype)> createEntityQueue;
         private ConcurrentQueue<(Action<Entity>, Entity)> takeEntityQueue;
+        private bool running;
+        private bool haltRequest;
     }
 }

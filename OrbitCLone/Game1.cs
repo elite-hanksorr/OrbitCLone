@@ -8,14 +8,137 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
-using OrbitLearner;
 using ECS;
+using OrbitCLone.Components;
+using OrbitCLone.Systems;
 
 namespace OrbitCLone
 {
     public class Game1 : Game
     {
-        enum GameState
+        GraphicsDeviceManager graphics;
+        SpriteBatch spriteBatch;
+
+        EntityManager entityManager;
+
+        Texture2D blackHoleTexture;
+        Texture2D playerTexture;
+        Texture2D tinyPlanetTexture;
+        Texture2D smallPlanetTexture;
+        Texture2D mediumPlanetTexture;
+        Texture2D largePlanetTexture;
+
+        SpriteFont font;
+
+        Entity blackHole;
+        Entity player;
+
+        DrawingSystem ds;
+        InfoDisplaySystem ids;
+
+        bool running = true;
+
+        public Game1()
+        {
+            graphics = new GraphicsDeviceManager(this);
+            Content.RootDirectory = "Content";
+        }
+
+        protected override void Initialize()
+        {
+            graphics.PreferredBackBufferWidth = GameConfig.SCREEN_WIDTH;
+            graphics.PreferredBackBufferHeight = GameConfig.SCREEN_HEIGHT;
+            graphics.ApplyChanges();
+
+            entityManager = new EntityManager();
+
+            // Register systems.
+            entityManager.RegisterSystem<MovementSystem>();
+            entityManager.RegisterSystem<CollisionSystem>();
+            entityManager.RegisterSystem<PlayerControllerSystem>();
+            entityManager.RegisterSystem<ScoreSystem>();
+
+            // Create entities.
+            var blackHoleArchetype = entityManager.CreateArchetype(typeof(Position), typeof(CircleCollider), typeof(BlackHoleTag), typeof(Sprite));
+            blackHole = entityManager.CreateEntity(blackHoleArchetype);
+            entityManager.SetComponentData(new Position(GameConfig.SCREEN_WIDTH / 2, GameConfig.SCREEN_HEIGHT / 2), blackHole);
+            entityManager.SetComponentData(new CircleCollider(80), blackHole);
+
+            var playerArchetype = entityManager.CreateArchetype(typeof(Position), typeof(CircleCollider), typeof(PlayerTag), typeof(Sprite), typeof(Input), typeof(Gravity), typeof(RotationalSpeed), typeof(PolarCoordinate), typeof(Score));
+            player = entityManager.CreateEntity(playerArchetype);
+            entityManager.SetComponentData(new PolarCoordinate(0.0, 400.0f), player);
+            entityManager.SetComponentData(new Gravity(200.0f), player);
+            entityManager.SetComponentData(new CircleCollider(22), player);
+            entityManager.SetComponentData(new RotationalSpeed(2.0f), player);
+            entityManager.SetComponentData(new Score(0), player);
+
+            base.Initialize();
+        }
+
+        protected override void LoadContent()
+        {
+            spriteBatch = new SpriteBatch(GraphicsDevice);
+            
+            // Load textures.
+            blackHoleTexture = Content.Load<Texture2D>("Sprites/OCL_BlackHole");
+            playerTexture = Content.Load<Texture2D>("Sprites/OCL_Player");
+            tinyPlanetTexture = Content.Load<Texture2D>("Sprites/OCL_TinyPlanet");
+            smallPlanetTexture = Content.Load<Texture2D>("Sprites/OCL_SmallPlanet");
+            mediumPlanetTexture = Content.Load<Texture2D>("Sprites/OCL_MediumPlanet");
+            largePlanetTexture = Content.Load<Texture2D>("Sprites/OCL_LargePlanet");
+
+            // Load fonts.
+            font = Content.Load<SpriteFont>("Fonts/myFont");
+
+            // Set up systems that use textures.
+            PlanetSpawnerSystem sp = new PlanetSpawnerSystem
+            {
+                tinyPlanetTexture = tinyPlanetTexture,
+                smallPlanetTexture = smallPlanetTexture,
+                mediumPlanetTexture = mediumPlanetTexture,
+                largePlanetTexture = largePlanetTexture,
+                tinyPlanetRadius = 15,
+                smallPlanetRadius = 20,
+                mediumPlanetRadius = 23,
+                largePlanetRadius = 28,
+                tinyPlanetSpeed = 0.2f,
+                smallPlanetSpeed = 0.15f,
+                mediumPlanetSpeed = 0.1f,
+                largePlanetSpeed = 0.07f
+            };
+            entityManager.RegisterSystem(sp);
+
+            // Set up systems that draw stuff.
+            ds = new DrawingSystem { sb = spriteBatch, GraphicsDevice = GraphicsDevice };
+            ds.SetManager(entityManager);
+
+            ids = new InfoDisplaySystem { f = font, sb = spriteBatch };
+            ids.SetManager(entityManager);
+
+            // Assign textures to entities that need them.
+            entityManager.SetComponentData(new Sprite(blackHoleTexture), blackHole);
+            entityManager.SetComponentData(new Sprite(playerTexture), player);
+        }
+
+        protected override void Update(GameTime gameTime)
+        {
+            if (running)
+                running = entityManager.UpdateSystems(gameTime);
+
+            base.Update(gameTime);
+        }
+
+        protected override void Draw(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(new Color(34, 18, 57));
+            spriteBatch.Begin();
+            ds.OnUpdate(gameTime);
+            ids.OnUpdate(gameTime);
+            spriteBatch.End();
+            base.Draw(gameTime);
+        }
+
+        /*enum GameState
         {
             Menu,
             PlayMode,
@@ -412,6 +535,6 @@ namespace OrbitCLone
             spriteBatch.End();
 
             base.Draw(gameTime);
-        }
+        }*/
     }
 }
