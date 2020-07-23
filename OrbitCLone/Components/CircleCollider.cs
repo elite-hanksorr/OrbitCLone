@@ -11,12 +11,14 @@ namespace OrbitCLone.Components
     struct CircleCollider : IComponent
     {
         public int Radius;
-        public BoundingSphere Collider; 
+        public BoundingSphere Collider;
+        public bool HasCollided;
 
         public CircleCollider(int radius)
         {
             Radius = radius;
             Collider = new BoundingSphere();
+            HasCollided = false;
         }
     }
 }

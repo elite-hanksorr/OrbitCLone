@@ -17,11 +17,11 @@ namespace OrbitCLone.Systems
 
         public override void OnUpdate(GameTime gt)
         {
-            Entities.ForEach((ref Score s, ref PolarCoordinate p, ref PlayerTag t) =>
+            Entities.ForEach((ref Score s, ref PolarCoordinate p, ref PlayerTag _) =>
             {
                 if (p.Radius >= 430)
                 { }
-                else if (p.Radius > 300 && p.Radius < 430)
+                else if (p.Radius > 300)
                     s.counter += 2 * (float)gt.ElapsedGameTime.TotalSeconds;
                 else if (p.Radius > 200)
                     s.counter += 2.5f * (float)gt.ElapsedGameTime.TotalSeconds;

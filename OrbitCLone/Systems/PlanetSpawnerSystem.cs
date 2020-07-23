@@ -40,6 +40,17 @@ namespace OrbitCLone.Systems
             base.Initialize();
         }
 
+        public override void HandleMessage(Message m)
+        {
+            if (m is NewRunMessage)
+            {
+                Entities.ForEach((ref EnemyTag _, ref Entity e) =>
+                {
+                    entityManager.RequestAction(entityManager.DeleteEntity, e);
+                });
+            }
+        }
+
         public override void OnUpdate(GameTime gt)
         {
             // Calculate current high score.
@@ -56,27 +67,27 @@ namespace OrbitCLone.Systems
             {
                 elapsedTime++;
                 int r = rng.Next(0, 100);
-                if (r + high_score > 70)
+                if (r + high_score > 50)
                     CreateSmallPlanet();
 
                 if ((elapsedTime % 2) == 0)
                 {
                     r = rng.Next(0, 100);
-                    if (r + high_score > 80)
+                    if (r + high_score > 55)
                         CreateMediumPlanet();
                 }
 
                 if ((elapsedTime % 3) == 0)
                 {
                     r = rng.Next(0, 100);
-                    if (r + high_score > 90)
+                    if (r + high_score > 60)
                         CreateLargePlanet();
                 }
 
                 if ((elapsedTime % 5) == 0)
                 {
                     r = rng.Next(0, 100);
-                    if (r + high_score > 95)
+                    if (r + high_score > 70)
                         CreateTinyPlanet();
                 }
             }

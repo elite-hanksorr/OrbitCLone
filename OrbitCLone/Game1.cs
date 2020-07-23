@@ -32,6 +32,7 @@ namespace OrbitCLone
 
         Entity blackHole;
         Entity player;
+        List<Entity> agents;
 
         DrawingSystem ds;
         InfoDisplaySystem ids;
@@ -55,7 +56,8 @@ namespace OrbitCLone
             // Register systems.
             entityManager.RegisterSystem<MovementSystem>();
             entityManager.RegisterSystem<CollisionSystem>();
-            entityManager.RegisterSystem<PlayerControllerSystem>();
+            //entityManager.RegisterSystem<PlayerControllerSystem>();
+            entityManager.RegisterSystem<AgentControllerSystem>();
             entityManager.RegisterSystem<ScoreSystem>();
 
             // Create entities.
@@ -64,13 +66,24 @@ namespace OrbitCLone
             entityManager.SetComponentData(new Position(GameConfig.SCREEN_WIDTH / 2, GameConfig.SCREEN_HEIGHT / 2), blackHole);
             entityManager.SetComponentData(new CircleCollider(80), blackHole);
 
-            var playerArchetype = entityManager.CreateArchetype(typeof(Position), typeof(CircleCollider), typeof(PlayerTag), typeof(Sprite), typeof(Input), typeof(Gravity), typeof(RotationalSpeed), typeof(PolarCoordinate), typeof(Score));
+            /*var playerArchetype = entityManager.CreateArchetype(typeof(Position), typeof(CircleCollider), typeof(PlayerTag), typeof(Sprite), typeof(Input), typeof(Gravity), typeof(RotationalSpeed), typeof(PolarCoordinate), typeof(Score));
             player = entityManager.CreateEntity(playerArchetype);
             entityManager.SetComponentData(new PolarCoordinate(0.0, 400.0f), player);
             entityManager.SetComponentData(new Gravity(200.0f), player);
             entityManager.SetComponentData(new CircleCollider(22), player);
             entityManager.SetComponentData(new RotationalSpeed(2.0f), player);
-            entityManager.SetComponentData(new Score(0), player);
+            entityManager.SetComponentData(new Score(0), player);*/
+
+            var agentArchetype = entityManager.CreateArchetype(typeof(Position), typeof(CircleCollider), typeof(PlayerTag), typeof(Sprite), typeof(Pcnn), typeof(Gravity), typeof(RotationalSpeed), typeof(PolarCoordinate), typeof(Score), typeof(Genome));
+            agents = entityManager.CreateEntity(agentArchetype, 100);
+            foreach (var a in agents)
+            {
+                entityManager.SetComponentData(new PolarCoordinate(0.0, 400.0f), a);
+                entityManager.SetComponentData(new Gravity(200.0f), a);
+                entityManager.SetComponentData(new CircleCollider(22), a);
+                entityManager.SetComponentData(new RotationalSpeed(2.0f), a);
+                entityManager.SetComponentData(new Score(0), a);
+            }
 
             base.Initialize();
         }
@@ -108,6 +121,13 @@ namespace OrbitCLone
             };
             entityManager.RegisterSystem(sp);
 
+            NeatSystem n = new NeatSystem
+            {
+                AgentTexture = playerTexture,
+                PopulationSize = 100
+            };
+            entityManager.RegisterSystem(n);
+
             // Set up systems that draw stuff.
             ds = new DrawingSystem { sb = spriteBatch, GraphicsDevice = GraphicsDevice };
             ds.SetManager(entityManager);
@@ -117,7 +137,11 @@ namespace OrbitCLone
 
             // Assign textures to entities that need them.
             entityManager.SetComponentData(new Sprite(blackHoleTexture), blackHole);
-            entityManager.SetComponentData(new Sprite(playerTexture), player);
+            //entityManager.SetComponentData(new Sprite(playerTexture), player);
+            foreach (var a in agents)
+            {
+                entityManager.SetComponentData(new Sprite(playerTexture), a);
+            }
         }
 
         protected override void Update(GameTime gameTime)

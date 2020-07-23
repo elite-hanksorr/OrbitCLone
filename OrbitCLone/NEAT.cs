@@ -11,7 +11,7 @@ namespace OrbitCLone
 {
     namespace NEAT
     {
-        enum NodeType
+        /*enum NodeType
         {
             Sensor,
             Hidden,
@@ -46,8 +46,8 @@ namespace OrbitCLone
             {
                 return new List<float>();
             }
-        }
-        class Agent : Player
+        }*/
+        /*class Agent : Player
         {
             public Genome Genotype { get; set; }
             public PCNN Phenotype { get; set; }
@@ -256,6 +256,6 @@ namespace OrbitCLone
             private List<ConnectionGene> structuralInnovations;
             private int innovationNumber;
             private Random rng;
-        }
+        }*/
     }
 }

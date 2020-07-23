@@ -20,6 +20,7 @@ namespace ECS
             systems = new List<ComponentSystem>();
             createEntityQueue = new ConcurrentQueue<(Func<Archetype, Entity>, Archetype)>();
             takeEntityQueue = new ConcurrentQueue<(Action<Entity>, Entity)>();
+            messageList = new List<Message>();
             running = true;
             haltRequest = false;
         }
@@ -56,7 +57,7 @@ namespace ECS
         {
             var entities = new List<Entity>(num_entities);
             for (int i = 0; i < num_entities; i++)
-                entities[i] = CreateEntity(archetype);
+                entities.Add(CreateEntity(archetype));
             return entities;
         }
 
@@ -146,11 +147,13 @@ namespace ECS
 
         public bool UpdateSystems(GameTime gt)
         {
+            // Update all systems.
             foreach (var system in systems)
             {
                 system.OnUpdate(gt);
             }
 
+            // Carry out data layout change requests.
             while (createEntityQueue.Any())
             {
                 (Func<Archetype, Entity>, Archetype) item;
@@ -170,6 +173,18 @@ namespace ECS
                 var e = item.Item2;
                 f(e);
             }
+
+            // Allow systems to handle messages.
+            if (messageList.Any())
+            {
+                foreach (var message in messageList)
+                {
+                    foreach (var system in systems)
+                        system.HandleMessage(message);
+                }
+            }
+
+            messageList.Clear();
 
             if (haltRequest)
                 running = false;
@@ -221,6 +236,11 @@ namespace ECS
             haltRequest = true;
         }
 
+        public void SendMessage(Message m)
+        {
+            messageList.Add(m);
+        }
+
         // Copies the components from a1[index1] to a2[index2]. a1 must be a subset of a2.
         private void CopyComponents(Archetype a1, Archetype a2, int index1, int index2)
         {
@@ -257,6 +277,7 @@ namespace ECS
         private List<ComponentSystem> systems;
         private ConcurrentQueue<(Func<Archetype, Entity>, Archetype)> createEntityQueue;
         private ConcurrentQueue<(Action<Entity>, Entity)> takeEntityQueue;
+        private List<Message> messageList;
         private bool running;
         private bool haltRequest;
     }

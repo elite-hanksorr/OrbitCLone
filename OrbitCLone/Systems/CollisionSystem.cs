@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using OrbitCLone.Components;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,31 +21,31 @@ namespace OrbitCLone.Systems
             });
 
             // Test players for intersection with enemies.
-            Entities.ForEach((ref CircleCollider c, ref PlayerTag pt, ref Entity e) =>
+            Entities.ForEach((ref CircleCollider c, ref EnemyTag _) =>
             {
-                var player_collider = c;
-                var player_entitiy = e;
-                Entities.ForEach((ref CircleCollider enemy_collider, ref EnemyTag et) =>
+                var enemy_collider = c;
+                Entities.ForEach((ref CircleCollider player_collider, ref PlayerTag __) =>
                 {
                     if(player_collider.Collider.Intersects(enemy_collider.Collider))
                     {
-                        //entityManager.RequestAction(entityManager.DeleteEntity, player_entitiy);
-                        entityManager.RequestHalt();
+                        //entityManager.RequestAction(entityManager.DeleteEntity, e);
+                        //entityManager.RequestHalt();
+                        player_collider.HasCollided = true;
                     }
                 });
             });
 
             // Test players for intersection with black hole.
-            Entities.ForEach((ref CircleCollider c, ref PlayerTag pt, ref Entity e) =>
+            Entities.ForEach((ref CircleCollider c, ref BlackHoleTag _) =>
             {
-                var player_collider = c;
-                var player_entity = e;
-                Entities.ForEach((ref CircleCollider bh_collider, ref BlackHoleTag bt) =>
+                var bh_collider = c;
+                Entities.ForEach((ref CircleCollider player_collider, ref PlayerTag __) =>
                 {
                     if (player_collider.Collider.Intersects(bh_collider.Collider))
                     {
-                        //entityManager.RequestAction(entityManager.DeleteEntity, player_entity);
-                        entityManager.RequestHalt();
+                        //entityManager.RequestAction(entityManager.DeleteEntity, e);
+                        //entityManager.RequestHalt();
+                        player_collider.HasCollided = true;
                     }
                 });
             });

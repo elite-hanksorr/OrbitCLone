@@ -15,10 +15,11 @@ namespace OrbitCLone.Systems
         public override void OnUpdate(GameTime gt)
         {
             // Move enemy planets.
-            Entities.ForEach((ref Position p, ref Velocity v) =>
+            Entities.ForEach((ref Position p, ref Velocity v, ref PolarCoordinate pc) =>
             {
                 p.x += v.dx * (float)gt.ElapsedGameTime.TotalSeconds;
                 p.y += v.dy * (float)gt.ElapsedGameTime.TotalSeconds;
+                pc.Radius = Vector2.Distance(new Vector2(p.x, p.y), new Vector2(GameConfig.SCREEN_WIDTH / 2, GameConfig.SCREEN_HEIGHT / 2));
             });
 
             // Move players.

@@ -8,6 +8,8 @@ using Microsoft.Xna.Framework;
 
 namespace ECS
 {
+    public class Message { }
+
     public abstract class ComponentSystem
     {
         public void SetManager(EntityManager em)
@@ -18,6 +20,7 @@ namespace ECS
 
         public abstract void OnUpdate(GameTime gt);
         public virtual void Initialize() { }
+        public virtual void HandleMessage(Message m) { }
 
         protected EntityManager entityManager;
         protected EntityQueryBuilder Entities;

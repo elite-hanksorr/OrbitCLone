@@ -48,6 +48,7 @@
     <Compile Include="Components\EnemyTag.cs" />
     <Compile Include="Components\Gravity.cs" />
     <Compile Include="Components\Input.cs" />
+    <Compile Include="Components\Pcnn.cs" />
     <Compile Include="Components\PlayerTag.cs" />
     <Compile Include="Components\PolarCoordinate.cs" />
     <Compile Include="Components\Position.cs" />
@@ -60,16 +61,20 @@
     <Compile Include="GameConfig.cs" />
     <Compile Include="GameEntity.cs" />
     <Compile Include="NEAT.cs" />
+    <Compile Include="Components\Genome.cs" />
     <Compile Include="Planet.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Systems\AgentControllerSystem.cs" />
     <Compile Include="Systems\CollisionSystem.cs" />
     <Compile Include="Systems\DrawingSystem.cs" />
     <Compile Include="Systems\InfoDisplaySystem.cs" />
     <Compile Include="Systems\MovementSystem.cs" />
+    <Compile Include="Systems\NeatSystem.cs" />
     <Compile Include="Systems\PlanetSpawnerSystem.cs" />
     <Compile Include="Systems\PlayerControllerSystem.cs" />
+    <Compile Include="Systems\ResetSystem.cs" />
     <Compile Include="Systems\ScoreSystem.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -100,7 +105,10 @@
       <Name>OrbitLearner</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="NeatComponents\" />
+    <Folder Include="NeatSystems\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
