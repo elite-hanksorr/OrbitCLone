@@ -130,10 +130,10 @@ namespace OrbitCLone
 
             // Set up systems that draw stuff.
             ds = new DrawingSystem { sb = spriteBatch, GraphicsDevice = GraphicsDevice };
-            ds.SetManager(entityManager);
+            entityManager.RegisterDrawingSystem(ds);
 
             ids = new InfoDisplaySystem { f = font, sb = spriteBatch };
-            ids.SetManager(entityManager);
+            entityManager.RegisterDrawingSystem(ids);
 
             // Assign textures to entities that need them.
             entityManager.SetComponentData(new Sprite(blackHoleTexture), blackHole);
@@ -156,8 +156,7 @@ namespace OrbitCLone
         {
             GraphicsDevice.Clear(new Color(34, 18, 57));
             spriteBatch.Begin();
-            ds.OnUpdate(gameTime);
-            ids.OnUpdate(gameTime);
+            entityManager.UpdateDrawingSystems(gameTime);
             spriteBatch.End();
             base.Draw(gameTime);
         }

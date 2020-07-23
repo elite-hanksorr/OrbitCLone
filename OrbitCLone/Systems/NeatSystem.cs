@@ -12,11 +12,20 @@ using System.Threading.Tasks;
 
 namespace OrbitCLone.Systems
 {
-    class NewRunMessage : Message {}
+    class NewRunMessage : Message
+    {
+        public int GenerationNumber;
+
+        public NewRunMessage(int generation)
+        {
+            GenerationNumber = generation;
+        }
+    }
 
     class NeatSystem : ComponentSystem
     {
         private List<(Genome, Score)> genomes;
+        private int generation;
 
         public int PopulationSize;
         public Texture2D AgentTexture;
@@ -24,6 +33,7 @@ namespace OrbitCLone.Systems
         public override void Initialize()
         {
             genomes = new List<(Genome, Score)>();
+            generation = 1;
             base.Initialize();
         }
 
@@ -39,7 +49,7 @@ namespace OrbitCLone.Systems
             });
 
             if (genomes.Count == PopulationSize)
-                entityManager.SendMessage(new NewRunMessage());
+                entityManager.SendMessage(new NewRunMessage(++generation));
         }
 
         public override void HandleMessage(Message m)

@@ -18,6 +18,7 @@ namespace ECS
             available_ids = new List<int>();
             archetype_stores = new Dictionary<Archetype, ArchetypeStorage>();
             systems = new List<ComponentSystem>();
+            drawingSystems = new List<ComponentSystem>();
             createEntityQueue = new ConcurrentQueue<(Func<Archetype, Entity>, Archetype)>();
             takeEntityQueue = new ConcurrentQueue<(Action<Entity>, Entity)>();
             messageList = new List<Message>();
@@ -145,6 +146,23 @@ namespace ECS
             systems.Add(system);
         }
 
+        public void RegisterDrawingSystem<T>()
+            where T : ComponentSystem, new()
+        {
+            T system = new T();
+            system.SetManager(this);
+            system.Initialize();
+            drawingSystems.Add(system);
+        }
+
+        public void RegisterDrawingSystem<T>(T system)
+            where T : ComponentSystem
+        {
+            system.SetManager(this);
+            system.Initialize();
+            drawingSystems.Add(system);
+        }
+
         public bool UpdateSystems(GameTime gt)
         {
             // Update all systems.
@@ -184,12 +202,30 @@ namespace ECS
                 }
             }
 
-            messageList.Clear();
 
             if (haltRequest)
                 running = false;
 
             return running;
+        }
+
+        public void UpdateDrawingSystems(GameTime gt)
+        {
+            foreach (var system in drawingSystems)
+            {
+                system.OnUpdate(gt);
+            }
+
+            if (messageList.Any())
+            {
+                foreach (var message in messageList)
+                {
+                    foreach (var system in drawingSystems)
+                        system.HandleMessage(message);
+                }
+            }
+
+            messageList.Clear();
         }
 
         public Archetype CreateArchetype(params Type[] componentTypes)
@@ -275,6 +311,7 @@ namespace ECS
         private List<int> available_ids;
         private Dictionary<Archetype, ArchetypeStorage> archetype_stores;
         private List<ComponentSystem> systems;
+        private List<ComponentSystem> drawingSystems;
         private ConcurrentQueue<(Func<Archetype, Entity>, Archetype)> createEntityQueue;
         private ConcurrentQueue<(Action<Entity>, Entity)> takeEntityQueue;
         private List<Message> messageList;
