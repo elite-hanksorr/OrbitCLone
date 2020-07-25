@@ -42,11 +42,9 @@ namespace OrbitCLone.Systems
 
         public override void HandleMessage(Message m)
         {
-            Debug.WriteLine("I have been called");
             if (m is NewRunMessage nrm)
             {
                 genNumber = nrm.GenerationNumber;
-                Debug.WriteLine(nrm.GenerationNumber);
             }
         }
 

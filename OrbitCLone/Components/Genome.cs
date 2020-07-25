@@ -25,6 +25,7 @@ namespace OrbitCLone.Components
 
     struct Genome : IComponent
     {
+        public int NumInputs, NumOutputs, NumNodes;
         public List<NodeType> NodeGenes { get; set; }
         public List<ConnectionGene> ConnectionGenes { get; set; }
     }
