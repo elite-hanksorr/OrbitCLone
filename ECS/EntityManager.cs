@@ -202,7 +202,6 @@ namespace ECS
                 }
             }
 
-
             if (haltRequest)
                 running = false;
 

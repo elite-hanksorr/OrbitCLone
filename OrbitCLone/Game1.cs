@@ -57,7 +57,8 @@ namespace OrbitCLone
             entityManager.RegisterSystem<MovementSystem>();
             entityManager.RegisterSystem<CollisionSystem>();
             //entityManager.RegisterSystem<PlayerControllerSystem>();
-            entityManager.RegisterSystem<AgentControllerSystem>();
+            var acs = new AgentControllerSystem() { NumPlanetInputs = 5 };
+            entityManager.RegisterSystem(acs);
             entityManager.RegisterSystem<ScoreSystem>();
 
             // Create entities.
@@ -74,7 +75,7 @@ namespace OrbitCLone
             entityManager.SetComponentData(new RotationalSpeed(2.0f), player);
             entityManager.SetComponentData(new Score(0), player);*/
 
-            var agentArchetype = entityManager.CreateArchetype(typeof(Position), typeof(CircleCollider), typeof(PlayerTag), typeof(Sprite), typeof(Pcnn), typeof(Gravity), typeof(RotationalSpeed), typeof(PolarCoordinate), typeof(Score), typeof(Genome));
+            /*var agentArchetype = entityManager.CreateArchetype(typeof(Position), typeof(CircleCollider), typeof(PlayerTag), typeof(Sprite), typeof(Pcnn), typeof(Gravity), typeof(RotationalSpeed), typeof(PolarCoordinate), typeof(Score), typeof(Genome));
             agents = entityManager.CreateEntity(agentArchetype, 100);
             foreach (var a in agents)
             {
@@ -83,7 +84,9 @@ namespace OrbitCLone
                 entityManager.SetComponentData(new CircleCollider(22), a);
                 entityManager.SetComponentData(new RotationalSpeed(2.0f), a);
                 entityManager.SetComponentData(new Score(0), a);
-            }
+            }*/
+
+            //entityManager.SendMessage(new NewRunMessage(1));
 
             base.Initialize();
         }
@@ -121,10 +124,13 @@ namespace OrbitCLone
             };
             entityManager.RegisterSystem(sp);
 
+            int numPlanetInputs = 5;
             NeatSystem n = new NeatSystem
             {
                 AgentTexture = playerTexture,
-                PopulationSize = 100
+                PopulationSize = 100,
+                NumInputs = numPlanetInputs * 2 + 2,
+                NumOutputs = 1
             };
             entityManager.RegisterSystem(n);
 
@@ -138,10 +144,10 @@ namespace OrbitCLone
             // Assign textures to entities that need them.
             entityManager.SetComponentData(new Sprite(blackHoleTexture), blackHole);
             //entityManager.SetComponentData(new Sprite(playerTexture), player);
-            foreach (var a in agents)
+            /*foreach (var a in agents)
             {
                 entityManager.SetComponentData(new Sprite(playerTexture), a);
-            }
+            }*/
         }
 
         protected override void Update(GameTime gameTime)

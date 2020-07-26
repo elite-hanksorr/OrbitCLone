@@ -96,7 +96,7 @@ namespace OrbitCLone.Components
 
         private float sigmoid(float x)
         {
-            return 1 / 1 + (float)Math.Pow(Math.E, -4.9 * x);
+            return 1 / (1 + (float)Math.Pow(Math.E, -4.9 * x));
         }
 
         public List<(List<(int neuron, float weight)> connections, float output)> Network;
