@@ -130,7 +130,12 @@ namespace OrbitCLone
                 AgentTexture = playerTexture,
                 PopulationSize = 100,
                 NumInputs = numPlanetInputs * 2 + 2,
-                NumOutputs = 1
+                NumOutputs = 1,
+                ExcessCoefficient = 1.0f,
+                DisjointCoefficient = 1.0f,
+                WeightDifferenceCoefficient = 0.4f,
+                Threshold = 3.0f,
+                DisableOnCrossoverChance = 0.75f
             };
             entityManager.RegisterSystem(n);
 

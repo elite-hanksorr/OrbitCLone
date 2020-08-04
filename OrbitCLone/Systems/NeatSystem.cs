@@ -29,20 +29,22 @@ namespace OrbitCLone.Systems
     class Species
     {
         public Genome Representative;
-        public List<Genome> Members;
-        public List<float> Fitnesses;
+        public List<(Genome genome, float fitness)> Members;
+        //public List<float> Fitnesses;
         public float MaxFitness;
         public float FitnessSum;
         public int Staleness;
+        public int NumOffspring;
 
         public Species()
         {
-            Members = new List<Genome>();
-            Fitnesses = new List<float>();
+            Members = new List<(Genome genome, float fitness)>();
+            //Fitnesses = new List<float>();
             MaxFitness = 0.0f;
             FitnessSum = 0.0f;
             Staleness = 0;
             Representative = new Genome();
+            NumOffspring = 0;
         }
     }
     
@@ -161,8 +163,8 @@ namespace OrbitCLone.Systems
                         if (distance(g, speciesList[i].Representative) < Threshold)
                         {
                             isNewSpecies = false;
-                            speciesList[i].Members.Add(copyGenome(g));
-                            speciesList[i].Fitnesses.Add(calcFitness(s));
+                            speciesList[i].Members.Add((copyGenome(g), calcFitness(s)));
+                            //speciesList[i].Fitnesses.Add(calcFitness(s));
                             break;
                         }
                     }
@@ -171,24 +173,37 @@ namespace OrbitCLone.Systems
                     {
                         var newSpecies = new Species();
                         newSpecies.Representative = copyGenome(g);
-                        newSpecies.Members.Add(copyGenome(g));
-                        newSpecies.Fitnesses.Add(calcFitness(s));
+                        newSpecies.Members.Add((copyGenome(g), calcFitness(s)));
+                        //newSpecies.Fitnesses.Add(calcFitness(s));
                         speciesList.Add(newSpecies);
                     }
                 }
 
-                // Adjust the fitness of individuals based on species size.
+                genomes.Clear();
+
+                // Cull empty species.
+                var removeIndices = new List<int>();
+                for (int i = 0; i < speciesList.Count; i++)
+                {
+                    if (!speciesList[i].Members.Any())
+                        removeIndices.Add(i);
+                }
+                removeIndices.Reverse();
+                foreach (var index in removeIndices)
+                    speciesList.RemoveAt(index);
+
+                // Adjust the fitness of individuals based on species size. (Explicit fitness sharing).
                 foreach (var species in speciesList)
                 {
-                    for (int i = 0; i < species.Fitnesses.Count; i++)
-                        species.Fitnesses[i] /= species.Fitnesses.Count;
+                    for (int i = 0; i < species.Members.Count; i++)
+                        species.Members[i] = (species.Members[i].genome, species.Members[i].fitness / species.Members.Count);
                 }
 
                 // Calculate each species' max fitness, fitness sum, and staleness.
                 foreach (var species in speciesList)
                 {
                     float maxFitness = 0.0f;
-                    foreach (var fitness in species.Fitnesses)
+                    foreach (var (_, fitness) in species.Members)
                     {
                         species.FitnessSum += fitness;
                         if (fitness > maxFitness)
@@ -201,8 +216,106 @@ namespace OrbitCLone.Systems
                         species.Staleness++;
                 }
 
+                float totalFitness = 0.0f;
+                foreach (var species in speciesList)
+                    totalFitness += species.FitnessSum;
 
-                
+                // Determine how many offspring each species should produce.
+                int n = 0;
+                foreach (var species in speciesList)
+                {
+                    double proportion = species.FitnessSum / totalFitness;
+                    species.NumOffspring = (int)Math.Round(PopulationSize * proportion);
+                    n += species.NumOffspring;
+                }
+
+                Debug.WriteLine(n);
+
+                // Kill the bottom half of each species.
+                foreach (var species in speciesList)
+                {
+                    species.Members.Sort(((Genome, float fitness) m1, (Genome, float fitness) m2) => (int)(m2.fitness - m1.fitness));
+                    int removeIndex = species.Members.Count / 2 + species.Members.Count % 2;
+                    species.Members.RemoveRange(removeIndex, species.Members.Count - removeIndex);
+                }                
+
+                // Have the species reproduce.
+                foreach (var species in speciesList)
+                {
+                    int numBabiesProduced = 0;
+
+                    // If the species has 5 or more members, copy the most fit individual straight over.
+                    if (species.Members.Count >= 5)
+                    {
+                        genomes.Add((copyGenome(species.Members[0].genome), new Score(0)));
+                        numBabiesProduced++;
+                    }
+
+                    // If there is only one organism in the species, have it reproduce asexually.
+                    if (species.Members.Count == 1)
+                    {
+                        for (int i = 0; i < species.NumOffspring; i++)
+                        {
+                            Genome baby = species.Members[0].genome;
+                            // TODO: mutate baby.
+                            genomes.Add((baby, new Score(0)));
+                        }
+                    }
+                    else
+                    {
+                        while (numBabiesProduced < species.NumOffspring)
+                        {
+                            for (int i = 0; i < species.Members.Count; i++)
+                                for (int j = i + 1; j < species.Members.Count; j++)
+                                {
+                                    Genome baby = crossover(species.Members[i], species.Members[j]);
+                                    // TODO: mutate baby.
+                                    genomes.Add((baby, new Score(0)));
+                                    numBabiesProduced++;
+                                    if (numBabiesProduced >= species.NumOffspring)
+                                    {
+                                        i = int.MaxValue - 1;
+                                        break;
+                                    }
+                                }
+                        }
+                    }
+                    species.Members.Clear();
+                }
+
+                int remaining = PopulationSize - genomes.Count;
+                for (int i = 0; i < remaining; i++)
+                {
+                    genomes.Add((newSimpleGenome(), new Score(0)));
+                }
+                Debug.WriteLine(genomes.Count);
+
+                // Populate new entities with baby genomes.
+                var agentArchetype = entityManager.CreateArchetype(
+                    typeof(Position),
+                    typeof(CircleCollider),
+                    typeof(PlayerTag),
+                    typeof(Sprite),
+                    typeof(Pcnn),
+                    typeof(Gravity),
+                    typeof(RotationalSpeed),
+                    typeof(PolarCoordinate),
+                    typeof(Score),
+                    typeof(Genome));
+
+                foreach (var genome in genomes)
+                {
+                    var agent = entityManager.CreateEntity(agentArchetype);
+                    entityManager.SetComponentData(new PolarCoordinate(0.0, 400.0f), agent);
+                    entityManager.SetComponentData(new Gravity(200.0f), agent);
+                    entityManager.SetComponentData(new CircleCollider(22), agent);
+                    entityManager.SetComponentData(new RotationalSpeed(2.0f), agent);
+                    entityManager.SetComponentData(genome.Item2, agent);
+                    entityManager.SetComponentData(new Sprite(AgentTexture), agent);
+                    entityManager.SetComponentData(new Pcnn(genome.Item1), agent);
+                    entityManager.SetComponentData(copyGenome(genome.Item1), agent);
+                }
+
                 /*var agentArchetype = entityManager.CreateArchetype(typeof(Position), typeof(CircleCollider), typeof(PlayerTag), typeof(Sprite), typeof(Pcnn), typeof(Gravity), typeof(RotationalSpeed), typeof(PolarCoordinate), typeof(Score), typeof(Genome));
                 var agents = entityManager.CreateEntity(agentArchetype, PopulationSize);
                 int i = 0;
@@ -430,8 +543,8 @@ namespace OrbitCLone.Systems
             var g1Innovations = new HashSet<int>();
             var g2Innovations = new HashSet<int>();
 
-            int g1MaxInnovation = g1.ConnectionGenes.Last().Innovation;
-            int g2MaxInnovation = g2.ConnectionGenes.Last().Innovation;
+            int g1MaxInnovation = g1.ConnectionGenes.Any() ? g1.ConnectionGenes.Last().Innovation : -1;
+            int g2MaxInnovation = g2.ConnectionGenes.Any() ? g2.ConnectionGenes.Last().Innovation : -1;
 
             // Fill in the sets with all non-excess innovations.
             foreach (var connectionGene in g1.ConnectionGenes)
@@ -473,8 +586,8 @@ namespace OrbitCLone.Systems
         private int findNumExcess(Genome g1, Genome g2)
         {
             int numExcess = 0;
-            int g1MaxInnovation = g1.ConnectionGenes.Last().Innovation;
-            int g2MaxInnovation = g2.ConnectionGenes.Last().Innovation;
+            int g1MaxInnovation = g1.ConnectionGenes.Any() ? g1.ConnectionGenes.Last().Innovation : -1;
+            int g2MaxInnovation = g2.ConnectionGenes.Any() ? g2.ConnectionGenes.Last().Innovation : -1;
 
             if (g1MaxInnovation > g2MaxInnovation)
             {
